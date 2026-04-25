@@ -322,26 +322,12 @@
         openBtn.setAttribute('aria-label', 'Abrir Provador Virtual');
         openBtn.insertAdjacentHTML('afterbegin', stampImageHTML);
 
-        // Nuvemshop: galeria de produto fica em .product-images
-        const gallerySelectors = [
-            '.product-images',
-            '.product-images-slider',
-            '.js-product-slide',
-            '.product-images-wrapper',
-        ];
-        let galleryEl = null;
-        for (const sel of gallerySelectors) {
-            galleryEl = document.querySelector(sel);
-            if (galleryEl) break;
-        }
+        // Nuvemshop: usar APENAS o container externo .product-images
+        // (NAO mexer no .product-images-slider/Swiper interno — quebra o carrossel)
+        const galleryEl = document.querySelector('.product-images');
         if (galleryEl) {
             if (window.getComputedStyle(galleryEl).position === 'static') galleryEl.style.position = 'relative';
-            galleryEl.style.overflow = 'visible';
-            // Garantir overflow visivel em containers internos (Swiper esconde com overflow:hidden)
-            galleryEl.querySelectorAll('.product-images-slider, .swiper, .swiper-container, .swiper-wrapper').forEach(el => {
-                el.style.overflow = 'visible';
-            });
-            // Eleva z-index do selo para ficar acima de tudo
+            // .product-images nao tem overflow:hidden por padrao, entao o selo aparece sem precisar mexer
             openBtn.style.zIndex = '999';
             galleryEl.appendChild(openBtn);
         } else {
