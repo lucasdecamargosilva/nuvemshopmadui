@@ -355,6 +355,8 @@
             '.js-prod-submit-form.btn-big',
             '.js-addtocart',
             '.js-prod-submit-form',
+            '.js-product-buy-btn',
+            '[name="add"]',
             '[data-store="product-buy-button"]',
             '[data-component="product.add-to-cart"]',
             '.js-product-form input[type="submit"]',
