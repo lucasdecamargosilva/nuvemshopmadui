@@ -200,7 +200,7 @@
                     <div id="q-header-provador">
                         <h1 style="margin:0 0 6px 0;font-size:16px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">Provador Virtual</h1>
                         <div style="margin:0;text-align:center;">
-                            <img src="https://acdn-us.mitiendanube.com/stores/005/736/640/themes/common/logo-164572917-1751035330-b4cfebbd24f987283d6cc623102b30db1751035330-640-0.webp" alt="MADUI" style="height:55px;width:auto;display:inline-block;">
+                            <img src="https://acdn-us.mitiendanube.com/stores/005/736/640/themes/common/logo-164572917-1751035330-b4cfebbd24f987283d6cc623102b30db1751035330-640-0.webp" alt="MADUI" style="height:75px;width:auto;display:inline-block;">
                         </div>
                     </div>
                     <div id="q-step-upload">
@@ -335,7 +335,23 @@
             document.body.appendChild(openBtn);
         }
 
-        // Botao inline desativado na Madui — somente o selo na foto
+        // ── Botao inline acima do botao de compra ──
+        const inlineWrapper = document.createElement('div');
+        inlineWrapper.className = 'q-inline-wrapper';
+        inlineWrapper.insertAdjacentHTML('afterbegin', '<div class="q-badge-novidade">Novidade!</div><button type="button" class="q-btn-inline-provador">PROVADOR VIRTUAL</button>');
+        const inlineBtn = inlineWrapper.querySelector('.q-btn-inline-provador');
+
+        // Nuvemshop: input.js-addtocart fica dentro de .cart-button-container
+        // Inserir o wrapper ANTES do .cart-button-container
+        const buyInput = document.querySelector('input.js-addtocart, [data-store="product-buy-button"]');
+        if (buyInput) {
+            const cartContainer = buyInput.closest('.cart-button-container');
+            if (cartContainer && cartContainer.parentElement) {
+                cartContainer.parentElement.insertBefore(inlineWrapper, cartContainer);
+            } else {
+                buyInput.parentElement.insertBefore(inlineWrapper, buyInput);
+            }
+        }
 
         const modal = document.getElementById('q-modal-ia');
         const genBtn = document.getElementById('q-btn-generate');
@@ -488,7 +504,7 @@
             e.preventDefault();
             openModal();
         }, true);
-        // inlineBtn desativado na Madui
+        if (inlineBtn) inlineBtn.onclick = () => openModal();
         closeBtn.onclick = () => closeModal();
         backBtn.onclick = () => closeModal();
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
