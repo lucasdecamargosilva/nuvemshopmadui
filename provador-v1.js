@@ -105,13 +105,13 @@
 
         /* BOTAO INLINE ACIMA DO CARRINHO */
         .q-inline-wrapper {
-            position: relative !important; width: 100% !important; margin-bottom: 10px !important;
+            position: relative !important; width: 100% !important; margin-top: 24px !important; margin-bottom: 16px !important;
         }
         .q-btn-inline-provador {
             display: flex !important; align-items: center !important; justify-content: center !important;
             gap: 10px !important; width: 100% !important; padding: 12px 20px !important;
             background: var(--q-bg) !important; color: var(--q-primary) !important;
-            border: 1px solid var(--q-primary) !important;
+            border: 1px solid var(--q-primary) !important; border-radius: 8px !important;
             font-family: 'Inter', sans-serif !important; font-size: 11px !important;
             font-weight: 600 !important; text-transform: uppercase !important;
             letter-spacing: 2px !important; cursor: pointer !important;
@@ -223,9 +223,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="q-photo-selector-group" style="display:none; flex-direction:column; align-items:center; margin:20px 0 10px;">
-                            <label style="margin-bottom:15px; text-transform:uppercase; letter-spacing:1px; font-weight:400; font-size:12px; text-align:center; width:100%;">Selecione a foto da peca:</label>
-                            <div id="q-product-images-container" style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap;"></div>
+                        <div id="q-photo-selector-group" style="display:none;">
+                            <div id="q-product-images-container"></div>
                         </div>
                         <p style="margin:15px 0 5px;font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--q-text-light);text-align:center;">Sua foto deve seguir estes requisitos:</p>
                         <div class="q-tips-grid" style="margin-top:0;">
@@ -451,14 +450,11 @@
                 const group = document.getElementById('q-photo-selector-group');
                 if (!container || !group) return;
                 container.textContent = '';
-
-                if (imgs.length < 2) {
-                    group.style.display = 'none';
-                    selectedProductImg = imgs[0] || '';
-                    return;
-                }
-
-                group.style.display = 'flex';
+                // Madui: seletor de foto desativado, sempre usa a primeira imagem
+                group.style.display = 'none';
+                selectedProductImg = imgs[0] || '';
+                return;
+                // (codigo abaixo permanece como referencia mas nunca executa)
                 const defaultIdx = imgs.length > 1 ? 1 : 0;
                 selectedProductImg = imgs[defaultIdx];
 
