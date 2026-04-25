@@ -335,22 +335,17 @@
             document.body.appendChild(openBtn);
         }
 
-        // ── Botao inline acima do botao de compra ──
+        // ── Botao inline ──
         const inlineWrapper = document.createElement('div');
         inlineWrapper.className = 'q-inline-wrapper';
         inlineWrapper.insertAdjacentHTML('afterbegin', '<div class="q-badge-novidade">Novidade!</div><button type="button" class="q-btn-inline-provador">PROVADOR VIRTUAL</button>');
         const inlineBtn = inlineWrapper.querySelector('.q-btn-inline-provador');
 
-        // Nuvemshop: input.js-addtocart fica dentro de .cart-button-container
-        // Inserir o wrapper ANTES do .cart-button-container
-        const buyInput = document.querySelector('input.js-addtocart, [data-store="product-buy-button"]');
-        if (buyInput) {
-            const cartContainer = buyInput.closest('.cart-button-container');
-            if (cartContainer && cartContainer.parentElement) {
-                cartContainer.parentElement.insertBefore(inlineWrapper, cartContainer);
-            } else {
-                buyInput.parentElement.insertBefore(inlineWrapper, buyInput);
-            }
+        // Madui: o botao Comprar fica em CSS Grid (.grid grid-auto-1), entao
+        // inserir antes dele quebra o layout. Solucao: colocar abaixo do "Guia de Medidas"
+        const sizeGuideLink = document.querySelector('a[data-target="#size-guide-modal"], a[data-modal-url="modal-fullscreen-size-guide"]');
+        if (sizeGuideLink) {
+            sizeGuideLink.parentElement.insertBefore(inlineWrapper, sizeGuideLink.nextSibling);
         }
 
         const modal = document.getElementById('q-modal-ia');
