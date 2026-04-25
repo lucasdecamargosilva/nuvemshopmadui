@@ -349,49 +349,7 @@
             document.body.appendChild(openBtn);
         }
 
-        // ── Botao inline acima do botao de compra ──
-        const inlineWrapper = document.createElement('div');
-        inlineWrapper.className = 'q-inline-wrapper';
-        inlineWrapper.insertAdjacentHTML('afterbegin', '<div class="q-badge-novidade">Novidade!</div><button type="button" class="q-btn-inline-provador">PROVADOR VIRTUAL</button>');
-        const inlineBtn = inlineWrapper.querySelector('.q-btn-inline-provador');
-
-        // Nuvemshop: botao Comprar fica dentro de .cart-button-container > input.js-addtocart
-        // Existem 2 elementos com .js-addtocart: o input real (visivel) e um div placeholder (oculto)
-        // Selecionar especificamente o input visivel
-        let inlinePlaced = false;
-        const buyEl = document.querySelector('input.js-addtocart, [data-store="product-buy-button"]');
-        if (buyEl) {
-            // Insere antes do container do botao para ficar acima dele
-            const cartContainer = buyEl.closest('.cart-button-container');
-            if (cartContainer && cartContainer.parentElement) {
-                cartContainer.parentElement.insertBefore(inlineWrapper, cartContainer);
-            } else {
-                buyEl.parentElement.insertBefore(inlineWrapper, buyEl);
-            }
-            inlinePlaced = true;
-        }
-        if (!inlinePlaced) {
-            // Fallback: selectores genericos
-            const fallbackSelectors = [
-                '.js-addtocart',
-                '.js-prod-submit-form',
-                '.js-product-form input[type="submit"]',
-                '.js-product-form button[type="submit"]',
-                'form[action*="/cart"] [type="submit"]',
-                'form input[name="add"]',
-            ];
-            for (const sel of fallbackSelectors) {
-                const el = document.querySelector(sel);
-                if (el) {
-                    const cartContainer = el.closest('.cart-button-container');
-                    const target = cartContainer || el.parentElement;
-                    const ref = cartContainer || el;
-                    target.parentElement.insertBefore(inlineWrapper, ref);
-                    inlinePlaced = true;
-                    break;
-                }
-            }
-        }
+        // Botao inline desativado na Madui — somente o selo na foto
 
         const modal = document.getElementById('q-modal-ia');
         const genBtn = document.getElementById('q-btn-generate');
@@ -544,7 +502,7 @@
             e.preventDefault();
             openModal();
         }, true);
-        inlineBtn.onclick = () => openModal();
+        // inlineBtn desativado na Madui
         closeBtn.onclick = () => closeModal();
         backBtn.onclick = () => closeModal();
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
