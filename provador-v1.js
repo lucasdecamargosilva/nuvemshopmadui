@@ -210,7 +210,7 @@
                                 <input type="tel" id="q-phone" class="q-input" placeholder="(11) 99999-9999" maxlength="15">
                                 <div id="q-phone-error" class="q-status-msg">Insira um numero valido</div>
                             </div>
-                            <div id="q-size-fields" style="display:none;">
+                            <div id="q-size-fields" style="display:block;">
                                 <div class="q-size-group">
                                     <div class="q-group">
                                         <label>Altura (cm)</label>
@@ -362,42 +362,51 @@
         const heightInput = document.getElementById('q-height');
         const weightInput = document.getElementById('q-weight');
 
-        // Detecta se e pagina de kit pela URL ou titulo do produto
-        const prodTitle = (document.querySelector('.js-product-name, h1.js-product-name, h1')?.innerText || '').toLowerCase();
-        // Recomendacao de tamanho desativada na Madui (sem tabela mapeada)
-        const isKit = false;
+        // Recomendação de tamanho ativada para Madui (tabela oficial de medidas).
+        const SHOW_SIZE = true;
+
+        // Estima busto/cintura/quadril a partir de altura+peso (mulher adulta).
+        // Mesmas fórmulas usadas no provador da Mariana Cardoso, baseadas em IMC.
+        function estimarMedidas(altura, peso) {
+            if (altura < 3) altura *= 100; // permite digitar 1.65 ou 165
+            const imc = peso / Math.pow(altura / 100, 2);
+            const dh = altura - 165; // diferença em relação à altura média
+            const cintura = 2.1 * imc + 0.05 * dh + 24;
+            const busto   = 2.05 * imc + 0.08 * dh + 43;
+            const quadril = 1.8 * imc + 0.06 * dh + 58;
+            return { cintura, busto, quadril };
+        }
+
+        // Tabela oficial Madui (P=36-38, M=40-42, G=44-46) — em cm
+        const MADUI_SIZES = [
+            { label: 'P', busto: [70, 89],  cintura: [62, 70], quadril: [88, 98]  },
+            { label: 'M', busto: [90, 98],  cintura: [70, 80], quadril: [98, 106] },
+            { label: 'G', busto: [98, 105], cintura: [78, 86], quadril: [106, 114] },
+        ];
 
         function recommendSize(height, weight) {
-            const h = parseInt(height);
-            const w = parseInt(weight);
+            const h = parseFloat(height);
+            const w = parseFloat(weight);
             if (!h || !w) return '';
-            // Calcula score baseado em altura e peso
-            // Tabela: P(165-170, 55-60), M(170-175, 60-70), G(175-180, 70-80), GG(180-190, 80-90)
-            const sizes = [
-                { label: 'P',  hMin: 0,   hMax: 170, wMin: 0,  wMax: 60 },
-                { label: 'M',  hMin: 170, hMax: 175, wMin: 60, wMax: 70 },
-                { label: 'G',  hMin: 175, hMax: 180, wMin: 70, wMax: 80 },
-                { label: 'GG', hMin: 180, hMax: 999, wMin: 80, wMax: 999 },
-            ];
-            // Determina tamanho por altura e por peso separadamente, depois pega o maior
-            let sizeByHeight = 'P';
-            if (h >= 180) sizeByHeight = 'GG';
-            else if (h >= 175) sizeByHeight = 'G';
-            else if (h >= 170) sizeByHeight = 'M';
-
-            let sizeByWeight = 'P';
-            if (w >= 80) sizeByWeight = 'GG';
-            else if (w >= 70) sizeByWeight = 'G';
-            else if (w >= 60) sizeByWeight = 'M';
-
-            // Pega o maior dos dois para garantir conforto
-            const order = ['P', 'M', 'G', 'GG'];
-            const idx = Math.max(order.indexOf(sizeByHeight), order.indexOf(sizeByWeight));
-            return order[idx];
+            const med = estimarMedidas(h, w);
+            // Para cada medida, encontra o índice da menor faixa que comporta o valor.
+            // Quem estoura a tabela vai pra G (último); quem fica abaixo, vai pra P (primeiro).
+            function findIdx(field, val) {
+                for (let i = 0; i < MADUI_SIZES.length; i++) {
+                    if (val <= MADUI_SIZES[i][field][1]) return i;
+                }
+                return MADUI_SIZES.length - 1;
+            }
+            const idxB = findIdx('busto',   med.busto);
+            const idxC = findIdx('cintura', med.cintura);
+            const idxQ = findIdx('quadril', med.quadril);
+            // Pega o maior índice — garante conforto: se uma medida pede G, vai G.
+            const finalIdx = Math.max(idxB, idxC, idxQ);
+            return MADUI_SIZES[finalIdx].label;
         }
 
         function showSizeRecommendation() {
-            if (!isKit) return;
+            if (!SHOW_SIZE) return;
             const size = recommendSize(heightInput.value, weightInput.value);
             const resultEl = document.getElementById('q-size-result');
             const valueEl = document.getElementById('q-size-value');
@@ -612,10 +621,15 @@
     }
 
 
-    const isProductPage = window.location.pathname.includes('/produtos/') ||
-        window.location.pathname.includes('/products/') ||
-        document.querySelector('.js-product-detail, .js-product-container') !== null ||
-        window.location.pathname.includes('preview.html') ||
+    // Só inicializa o provador em página de produto.
+    // Madui usa /produtos/<slug> (Nuvemshop pt-BR); /produto pega ambos plural e singular.
+    // Removida a checagem por classes do tema porque estava causando o botão a aparecer
+    // em listagens/home que reutilizam .js-product-detail.
+    const path = window.location.pathname;
+    const isProductPage =
+        path.includes('/produto') ||
+        path.includes('/products/') ||
+        path.includes('preview.html') ||
         window.location.protocol === 'file:';
 
     if (isProductPage) {
