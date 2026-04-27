@@ -384,10 +384,11 @@
             { label: 'G', busto: [98, 105], cintura: [78, 86], quadril: [106, 114] },
         ];
 
-        // Detecta o tipo da peça (top, bottom, full) pelo título do produto.
+        // Detecta o tipo da peça (top, bottom, full, none) pelo título do produto.
         // Madui vende fitness: tops/blusas, calças/leggings/bermudas, macaquinhos.
-        // Quando não conseguimos classificar, default = 'full' (avalia 3 medidas =
-        // recomendação mais conservadora; melhor errar sobrando que faltando).
+        // Acessórios (garrafa, meia, etc) recebem 'none' — sem recomendação de tamanho.
+        // Quando não conseguimos classificar uma peça de roupa, default = 'full'
+        // (avalia 3 medidas = mais conservador; melhor errar sobrando que faltando).
         function detectProductType() {
             const raw = (
                 document.querySelector('h1.js-product-name, .js-product-name, h1')?.innerText ||
@@ -397,7 +398,9 @@
             // Remove acentos pra simplificar regex
             const txt = raw.normalize('NFD').replace(/[̀-ͯ]/g, '');
 
-            // Corpo inteiro vem primeiro porque "macaquinho" pode ter palavras de top/bottom no nome
+            // Acessórios primeiro: não usam tabela P/M/G normal, então pulamos a recomendação
+            if (/\b(garrafa|garrafinha|cantil|squeeze|meia|meias|headband|faixa|necessaire|bolsa|mochila|toalha|tapete|colchonete|garrafa)\b/.test(txt)) return 'none';
+            // Corpo inteiro vem primeiro pois "macaquinho" pode ter palavras de top/bottom no nome
             if (/\b(macaquinho|macacao|body|vestido|jardineira|conjunto)\b/.test(txt)) return 'full';
             if (/\b(calca|legging|bermuda|short|shorts|saia)\b/.test(txt))            return 'bottom';
             if (/\b(top|blusa|cropped|regata|camiseta|camisa|sutia|jaqueta|casaco)\b/.test(txt)) return 'top';
@@ -415,8 +418,9 @@
             const h = parseFloat(height);
             const w = parseFloat(weight);
             if (!h || !w) return '';
-            const med = estimarMedidas(h, w);
             const type = detectProductType();
+            if (type === 'none') return ''; // acessório: não recomenda
+            const med = estimarMedidas(h, w);
             const fields = TYPE_MEASURES[type];
             // Para cada medida relevante, encontra o índice da menor faixa que comporta o valor.
             function findIdx(field) {
@@ -443,6 +447,13 @@
             } else {
                 resultEl.style.display = 'none';
             }
+        }
+
+        // Em acessórios (garrafa, meia, etc) não pedimos altura/peso —
+        // só serviria pra recomendar tamanho, e essa peça não tem tabela P/M/G.
+        if (detectProductType() === 'none') {
+            const sf = document.getElementById('q-size-fields');
+            if (sf) sf.style.display = 'none';
         }
 
         let userPhoto = null;
