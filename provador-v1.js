@@ -294,7 +294,26 @@
     `;
 
 
+    // Detecta tipo do produto a partir do título. Mantida no escopo do módulo
+    // para poder pular a inicialização do provador em acessórios.
+    function detectProductTypeFromTitle() {
+        const raw = (
+            document.querySelector('h1.js-product-name, .js-product-name, h1')?.innerText ||
+            document.querySelector('meta[property="og:title"]')?.content ||
+            document.title || ''
+        ).toLowerCase();
+        const txt = raw.normalize('NFD').replace(/[̀-ͯ]/g, '');
+        if (/\b(garrafa|garrafinha|cantil|squeeze|meia|meias|headband|faixa|necessaire|bolsa|mochila|toalha|tapete|colchonete)\b/.test(txt)) return 'none';
+        if (/\b(macaquinho|macacao|body|vestido|jardineira|conjunto)\b/.test(txt)) return 'full';
+        if (/\b(calca|legging|bermuda|short|shorts|saia)\b/.test(txt)) return 'bottom';
+        if (/\b(top|blusa|cropped|regata|camiseta|camisa|sutia|jaqueta|casaco)\b/.test(txt)) return 'top';
+        return 'full';
+    }
+
     function init() {
+        // Acessórios (garrafa, meia, etc) não usam o provador virtual.
+        if (detectProductTypeFromTitle() === 'none') return;
+
         const fontLink = document.createElement('link');
         fontLink.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
         fontLink.rel = 'stylesheet';
@@ -384,28 +403,8 @@
             { label: 'G', busto: [98, 105], cintura: [78, 86], quadril: [106, 114] },
         ];
 
-        // Detecta o tipo da peça (top, bottom, full, none) pelo título do produto.
-        // Madui vende fitness: tops/blusas, calças/leggings/bermudas, macaquinhos.
-        // Acessórios (garrafa, meia, etc) recebem 'none' — sem recomendação de tamanho.
-        // Quando não conseguimos classificar uma peça de roupa, default = 'full'
-        // (avalia 3 medidas = mais conservador; melhor errar sobrando que faltando).
-        function detectProductType() {
-            const raw = (
-                document.querySelector('h1.js-product-name, .js-product-name, h1')?.innerText ||
-                document.querySelector('meta[property="og:title"]')?.content ||
-                document.title || ''
-            ).toLowerCase();
-            // Remove acentos pra simplificar regex
-            const txt = raw.normalize('NFD').replace(/[̀-ͯ]/g, '');
-
-            // Acessórios primeiro: não usam tabela P/M/G normal, então pulamos a recomendação
-            if (/\b(garrafa|garrafinha|cantil|squeeze|meia|meias|headband|faixa|necessaire|bolsa|mochila|toalha|tapete|colchonete|garrafa)\b/.test(txt)) return 'none';
-            // Corpo inteiro vem primeiro pois "macaquinho" pode ter palavras de top/bottom no nome
-            if (/\b(macaquinho|macacao|body|vestido|jardineira|conjunto)\b/.test(txt)) return 'full';
-            if (/\b(calca|legging|bermuda|short|shorts|saia)\b/.test(txt))            return 'bottom';
-            if (/\b(top|blusa|cropped|regata|camiseta|camisa|sutia|jaqueta|casaco)\b/.test(txt)) return 'top';
-            return 'full';
-        }
+        // Reutiliza a detecção definida em escopo de módulo.
+        const detectProductType = detectProductTypeFromTitle;
 
         // Quais medidas avaliar por tipo de peça (mantém só as relevantes).
         const TYPE_MEASURES = {
