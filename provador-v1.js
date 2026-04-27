@@ -384,24 +384,51 @@
             { label: 'G', busto: [98, 105], cintura: [78, 86], quadril: [106, 114] },
         ];
 
+        // Detecta o tipo da peça (top, bottom, full) pelo título do produto.
+        // Madui vende fitness: tops/blusas, calças/leggings/bermudas, macaquinhos.
+        // Quando não conseguimos classificar, default = 'full' (avalia 3 medidas =
+        // recomendação mais conservadora; melhor errar sobrando que faltando).
+        function detectProductType() {
+            const raw = (
+                document.querySelector('h1.js-product-name, .js-product-name, h1')?.innerText ||
+                document.querySelector('meta[property="og:title"]')?.content ||
+                document.title || ''
+            ).toLowerCase();
+            // Remove acentos pra simplificar regex
+            const txt = raw.normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+            // Corpo inteiro vem primeiro porque "macaquinho" pode ter palavras de top/bottom no nome
+            if (/\b(macaquinho|macacao|body|vestido|jardineira|conjunto)\b/.test(txt)) return 'full';
+            if (/\b(calca|legging|bermuda|short|shorts|saia)\b/.test(txt))            return 'bottom';
+            if (/\b(top|blusa|cropped|regata|camiseta|camisa|sutia|jaqueta|casaco)\b/.test(txt)) return 'top';
+            return 'full';
+        }
+
+        // Quais medidas avaliar por tipo de peça (mantém só as relevantes).
+        const TYPE_MEASURES = {
+            top:    ['busto', 'cintura'],
+            bottom: ['cintura', 'quadril'],
+            full:   ['busto', 'cintura', 'quadril'],
+        };
+
         function recommendSize(height, weight) {
             const h = parseFloat(height);
             const w = parseFloat(weight);
             if (!h || !w) return '';
             const med = estimarMedidas(h, w);
-            // Para cada medida, encontra o índice da menor faixa que comporta o valor.
-            // Quem estoura a tabela vai pra G (último); quem fica abaixo, vai pra P (primeiro).
-            function findIdx(field, val) {
+            const type = detectProductType();
+            const fields = TYPE_MEASURES[type];
+            // Para cada medida relevante, encontra o índice da menor faixa que comporta o valor.
+            function findIdx(field) {
+                const val = med[field];
                 for (let i = 0; i < MADUI_SIZES.length; i++) {
                     if (val <= MADUI_SIZES[i][field][1]) return i;
                 }
                 return MADUI_SIZES.length - 1;
             }
-            const idxB = findIdx('busto',   med.busto);
-            const idxC = findIdx('cintura', med.cintura);
-            const idxQ = findIdx('quadril', med.quadril);
+            const indices = fields.map(findIdx);
             // Pega o maior índice — garante conforto: se uma medida pede G, vai G.
-            const finalIdx = Math.max(idxB, idxC, idxQ);
+            const finalIdx = Math.max(...indices);
             return MADUI_SIZES[finalIdx].label;
         }
 
