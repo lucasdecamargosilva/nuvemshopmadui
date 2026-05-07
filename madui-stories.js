@@ -96,29 +96,43 @@
     if (document.getElementById('madui-stories-style')) return;
     var css = `
       .ms-trigger {
-        position: absolute; top: 12px; left: 12px; z-index: 50;
-        width: 56px; height: 56px; border-radius: 50%; padding: 2px;
+        position: absolute; top: 16px; left: 16px; z-index: 50;
+        width: 96px; height: 96px; border-radius: 50%; padding: 3px;
         background: linear-gradient(135deg, #d97757 0%, #b54a3e 50%, #6b2a1f 100%);
-        cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+        cursor: pointer; box-shadow: 0 6px 22px rgba(0,0,0,0.25);
         display: flex; align-items: center; justify-content: center;
         animation: ms-pulse 2.6s infinite ease-out;
         border: none;
       }
       @keyframes ms-pulse {
-        0%,100% { transform: scale(1); }
-        50% { transform: scale(1.06); }
+        0%,100% { transform: scale(1); box-shadow: 0 6px 22px rgba(0,0,0,0.25); }
+        50% { transform: scale(1.05); box-shadow: 0 8px 28px rgba(217, 119, 87, 0.45); }
       }
       .ms-trigger-inner {
-        width: 100%; height: 100%; border-radius: 50%; background: #fff;
-        display: flex; align-items: center; justify-content: center;
-        overflow: hidden;
+        width: 100%; height: 100%; border-radius: 50%; background: #000;
+        display: block; overflow: hidden; position: relative;
       }
-      .ms-trigger svg { width: 22px; height: 22px; color: #6b2a1f; fill: currentColor; stroke: currentColor; }
+      .ms-trigger-video {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%; object-fit: cover;
+        background: #000; display: block;
+      }
+      .ms-trigger-play-badge {
+        position: absolute; bottom: 4px; right: 4px;
+        width: 26px; height: 26px; border-radius: 50%;
+        background: rgba(255,255,255,0.95);
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      }
+      .ms-trigger-play-badge svg {
+        width: 12px; height: 12px; color: #6b2a1f;
+        fill: currentColor; stroke: currentColor;
+      }
       .ms-trigger-label {
         position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-        margin-top: 6px; font-size: 9px; font-weight: 600; color: #6b2a1f;
-        text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;
-        background: rgba(255,255,255,0.9); padding: 2px 8px; border-radius: 999px;
+        margin-top: 8px; font-size: 10px; font-weight: 600; color: #6b2a1f;
+        text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
+        background: rgba(255,255,255,0.92); padding: 3px 10px; border-radius: 999px;
         pointer-events: none;
       }
       .ms-overlay {
@@ -216,9 +230,19 @@
       gallery.style.position = 'relative';
     }
 
-    var playSvg = svg({}, [{ tag: 'polygon', attrs: { points: '6 4 20 12 6 20 6 4' } }]);
+    var loopVideo = el('video.ms-trigger-video', {
+      src: videoUrl(matchedEntry.public_id),
+      autoplay: '', muted: '', loop: '', playsinline: '',
+      'webkit-playsinline': '',
+      preload: 'auto'
+    });
+    loopVideo.muted = true;
+    loopVideo.defaultMuted = true;
 
-    var inner = el('span.ms-trigger-inner', null, [playSvg]);
+    var playBadgeSvg = svg({}, [{ tag: 'polygon', attrs: { points: '6 4 20 12 6 20 6 4' } }]);
+    var playBadge = el('span.ms-trigger-play-badge', null, [playBadgeSvg]);
+
+    var inner = el('span.ms-trigger-inner', null, [loopVideo, playBadge]);
     var label = el('span.ms-trigger-label', { text: 'Ver vídeo' });
     var btn = el('button.ms-trigger', {
       type: 'button',
@@ -226,6 +250,10 @@
       on: { click: function () { openStory(matchedEntry); } }
     }, [inner, label]);
     gallery.appendChild(btn);
+
+    // Some browsers need explicit play() call to start autoplay
+    var p = loopVideo.play();
+    if (p && p.catch) p.catch(function () {});
   }
 
   // ============ Story Player ============
