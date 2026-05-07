@@ -124,16 +124,16 @@
         width: 100%; height: 100%; object-fit: cover;
         background: #000; display: block;
       }
-      .ms-trigger-play-badge {
+      .ms-trigger-audio-badge {
         position: absolute; bottom: 4px; right: 4px;
-        width: 26px; height: 26px; border-radius: 50%;
-        background: rgba(255,255,255,0.95);
+        width: 24px; height: 24px; border-radius: 50%;
+        background: rgba(0,0,0,0.55);
         display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        backdrop-filter: blur(4px);
       }
-      .ms-trigger-play-badge svg {
-        width: 12px; height: 12px; color: #6b2a1f;
-        fill: currentColor; stroke: currentColor;
+      .ms-trigger-audio-badge svg {
+        width: 13px; height: 13px; color: #fff;
+        fill: none; stroke: currentColor;
       }
       .ms-trigger-label {
         position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
@@ -246,10 +246,14 @@
     loopVideo.muted = true;
     loopVideo.defaultMuted = true;
 
-    var playBadgeSvg = svg({}, [{ tag: 'polygon', attrs: { points: '6 4 20 12 6 20 6 4' } }]);
-    var playBadge = el('span.ms-trigger-play-badge', null, [playBadgeSvg]);
+    var audioBadgeSvg = svg({}, [
+      { tag: 'polygon', attrs: { points: '11 5 6 9 2 9 2 15 6 15 11 19 11 5' } },
+      { tag: 'line', attrs: { x1: '23', y1: '9', x2: '17', y2: '15' } },
+      { tag: 'line', attrs: { x1: '17', y1: '9', x2: '23', y2: '15' } }
+    ]);
+    var audioBadge = el('span.ms-trigger-audio-badge', null, [audioBadgeSvg]);
 
-    var inner = el('span.ms-trigger-inner', null, [loopVideo, playBadge]);
+    var inner = el('span.ms-trigger-inner', null, [loopVideo, audioBadge]);
     var label = el('span.ms-trigger-label', { text: 'Ver vídeo' });
     var btn = el('button.ms-trigger', {
       type: 'button',
