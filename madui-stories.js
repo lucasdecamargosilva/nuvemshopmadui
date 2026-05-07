@@ -38,9 +38,16 @@
       .trim();
   }
 
-  function videoUrl(publicId) {
+  // Cloudinary transformations:
+  //   bolinha = preview pequeno em loop (240px de largura, qualidade eco) -> ~0.7MB
+  //   fullscreen = vídeo principal (720px, qualidade boa)                -> ~3MB
+  // Original sem transformação tem ~71MB; jamais usar.
+  function videoUrl(publicId, variant) {
     var encoded = encodeURIComponent(publicId).replace(/%2F/g, '/');
-    return 'https://res.cloudinary.com/' + CLOUD_NAME + '/video/upload/' + encoded + '.mp4';
+    var transform = variant === 'thumb'
+      ? 'f_auto,q_auto:eco,w_240'
+      : 'f_auto,q_auto:good,w_720';
+    return 'https://res.cloudinary.com/' + CLOUD_NAME + '/video/upload/' + transform + '/' + encoded + '.mp4';
   }
 
   function isProductPage() {
@@ -231,7 +238,7 @@
     }
 
     var loopVideo = el('video.ms-trigger-video', {
-      src: videoUrl(matchedEntry.public_id),
+      src: videoUrl(matchedEntry.public_id, 'thumb'),
       autoplay: '', muted: '', loop: '', playsinline: '',
       'webkit-playsinline': '',
       preload: 'auto'
@@ -294,7 +301,7 @@
       on: { click: closeStory }
     });
 
-    video = el('video.ms-video', { playsinline: '', muted: '' });
+    video = el('video.ms-video', { playsinline: '', muted: '', preload: 'none' });
 
     var pausedIconSvg = svg({}, [{ tag: 'polygon', attrs: { points: '6 4 20 12 6 20 6 4' } }]);
     var pausedIcon = el('div.ms-paused-icon', null, [pausedIconSvg]);
