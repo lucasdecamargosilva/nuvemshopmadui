@@ -246,14 +246,7 @@
     loopVideo.muted = true;
     loopVideo.defaultMuted = true;
 
-    var audioBadgeSvg = svg({}, [
-      { tag: 'polygon', attrs: { points: '11 5 6 9 2 9 2 15 6 15 11 19 11 5' } },
-      { tag: 'line', attrs: { x1: '23', y1: '9', x2: '17', y2: '15' } },
-      { tag: 'line', attrs: { x1: '17', y1: '9', x2: '23', y2: '15' } }
-    ]);
-    var audioBadge = el('span.ms-trigger-audio-badge', null, [audioBadgeSvg]);
-
-    var inner = el('span.ms-trigger-inner', null, [loopVideo, audioBadge]);
+    var inner = el('span.ms-trigger-inner', null, [loopVideo]);
     var label = el('span.ms-trigger-label', { text: 'Ver vídeo' });
     var btn = el('button.ms-trigger', {
       type: 'button',
