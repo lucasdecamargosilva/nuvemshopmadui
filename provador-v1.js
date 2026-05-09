@@ -1,4 +1,35 @@
 (function () {
+    // ─── SEO BACKLINK BADGE (static link to provoulevou.com.br for Google crawler) ───
+    (function() {
+        function injectPLBadge() {
+            try {
+                if (document.querySelector('.pl-seo-badge')) return;
+                var path = window.location.pathname;
+                var isProduct = path.includes('/produto/') || path.includes('/produtos/') || path.includes('/products/') || path.includes('/p/') || document.querySelector('meta[property="og:type"][content="product"]');
+                if (!isProduct) return;
+                var b = document.createElement('div');
+                b.className = 'pl-seo-badge';
+                b.style.cssText = 'font-size:10px;color:#aaa;text-align:center;padding:6px 0 10px;letter-spacing:0.3px;font-family:inherit;line-height:1.3;';
+                var a = document.createElement('a');
+                a.href = 'https://provoulevou.com.br?utm_source=widget&utm_medium=lojista&utm_campaign=madui';
+                a.target = '_blank';
+                a.rel = 'noopener';
+                a.title = 'Provador Virtual com IA por Provou Levou';
+                a.style.cssText = 'color:#888;text-decoration:none;';
+                a.textContent = 'Provador Virtual com IA por Provou Levou';
+                b.appendChild(a);
+                var buy = document.querySelector('.js-addtocart, .btn-add-to-cart, [data-component="product.add-to-cart"], .addtocart, button[name="add"], .product-form__cart-submit, .frame_product_action_button button, #form_comprar button');
+                if (buy && buy.parentNode) {
+                    buy.parentNode.insertBefore(b, buy.nextSibling);
+                }
+            } catch(e) {}
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectPLBadge);
+        else injectPLBadge();
+        setTimeout(injectPLBadge, 2500);
+    })();
+
+
     const apiKey = "pl_live_fe5eeec96552b88148c104c106ec51ff7d07e65411e9a11874b66fcf0ea342a7";
     window.PROVOU_LEVOU_API_KEY = apiKey;
 
@@ -285,7 +316,7 @@
                         </div>
                     </div>
                 </div>
-                <a href="https://provoulevou.com.br" target="_blank" class="q-powered-footer" style="text-decoration:none;">
+                <a href="https://provoulevou.com.br?utm_source=widget&utm_medium=lojista&utm_campaign=madui" target="_blank" class="q-powered-footer" style="text-decoration:none;">
                     <span style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--q-text-light);">Powered by</span>
                     <img src="https://provoulevou.com.br/assets/provoulevou-logo.png" class="q-quantic-logo">
                 </a>
