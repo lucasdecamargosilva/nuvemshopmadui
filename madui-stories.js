@@ -9,6 +9,39 @@
  *   2. Adicionar entry em MAPPING abaixo com public_id + matches
  */
 (function () {
+
+    // ─── SEO BACKLINK BADGE (mini logo discreto pro crawler do Google) ───
+    (function() {
+        function injectPLBadge() {
+            try {
+                if (document.querySelector('.pl-seo-badge')) return;
+                var path = window.location.pathname;
+                var isProduct = path.includes('/produto/') || path.includes('/produtos/') || path.includes('/products/') || path.includes('/p/') || document.querySelector('meta[property="og:type"][content="product"]');
+                if (!isProduct) return;
+                var b = document.createElement('div');
+                b.className = 'pl-seo-badge';
+                b.style.cssText = 'text-align:center;padding:4px 0;margin:0;opacity:0.5;line-height:1;';
+                var a = document.createElement('a');
+                a.href = 'https://provoulevou.com.br?utm_source=widget&utm_medium=lojista&utm_campaign=madui';
+                a.target = '_blank';
+                a.rel = 'noopener';
+                a.title = 'Provador Virtual com IA por Provou Levou';
+                a.style.cssText = 'display:inline-block;text-decoration:none;border:0;outline:0;';
+                var img = document.createElement('img');
+                img.src = 'https://i.ibb.co/MD3B4FQf/Logo-provou-preto-1.png';
+                img.alt = 'Provador Virtual com IA por Provou Levou';
+                img.style.cssText = 'height:12px;width:auto;border:0;display:block;';
+                a.appendChild(img);
+                b.appendChild(a);
+                document.body.appendChild(b);
+            } catch(e) {}
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectPLBadge);
+        else injectPLBadge();
+        setTimeout(injectPLBadge, 2500);
+    })();
+
+
   'use strict';
 
   if (window.__MADUI_STORIES__) return;
