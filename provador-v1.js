@@ -651,62 +651,83 @@
         };
 
         confirmBtnYes.onclick = async () => {
-            confirmStep.style.display = 'none';
-            confirmStep.style.pointerEvents = 'none';
-            uploadStep.style.display = 'none';
-            document.getElementById('q-loading-box').style.display = 'block';
 
-            const keyToUse = window.PROVOU_LEVOU_API_KEY;
-            if (!keyToUse || keyToUse.includes("COLOQUE_A_CHAVE_AQUI")) {
-                alert("Erro: API Key nao configurada.");
-                document.getElementById('q-loading-box').style.display = 'none';
-                uploadStep.style.display = 'block';
-                return;
-            }
 
-            // Usa a imagem selecionada pelo cliente no picker
-            const prodImg = selectedProductImg || (document.querySelector('meta[property="og:image"]')?.content || '');
-            // Pega o titulo do produto de forma robusta (ignora h1.logo do header)
-            let prodName = '';
-            const titleSelectors = ['.js-product-name', 'h1.js-product-name', 'meta[property="og:title"]'];
-            for (const sel of titleSelectors) {
-                const el = document.querySelector(sel);
-                const val = el?.innerText?.trim() || el?.content?.trim() || '';
-                if (val) { prodName = val; break; }
-            }
-            if (!prodName) prodName = document.title;
+            if (window._provouLevouBusy) return;
+
+
+            window._provouLevouBusy = true;
+
 
             try {
-                const fd = new FormData();
-                fd.append('person_image', userPhoto);
-                fd.append('whatsapp', '55' + phoneInput.value.replace(/\D/g, ''));
-                fd.append('phone_raw', phoneInput.value);
-                fd.append('product_name', prodName);
-                fd.append('api_key', keyToUse);
+                confirmStep.style.display = 'none';
+                confirmStep.style.pointerEvents = 'none';
+                uploadStep.style.display = 'none';
+                document.getElementById('q-loading-box').style.display = 'block';
 
-                if (prodImg) {
-                    try { const b = await fetch(prodImg).then(r => r.blob()); fd.append('product_image', b, 'p.png'); } catch (_) { }
-                }
-
-                const res = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
-                if (res.ok) {
-                    const blob = await res.blob();
-                    document.getElementById('q-loading-box').style.display = 'none';
-                    document.getElementById('q-final-view-img').src = URL.createObjectURL(blob);
-                    document.querySelector('.q-card-ia').classList.add('is-result');
-                    document.getElementById('q-step-result').style.display = 'flex';
-                    showSizeRecommendation();
-                } else if (res.status === 401 || res.status === 403) {
+                const keyToUse = window.PROVOU_LEVOU_API_KEY;
+                if (!keyToUse || keyToUse.includes("COLOQUE_A_CHAVE_AQUI")) {
+                    alert("Erro: API Key nao configurada.");
                     document.getElementById('q-loading-box').style.display = 'none';
                     uploadStep.style.display = 'block';
-                    alert("Provas virtuais indisponiveis nesta loja no momento.");
-                } else { throw new Error(); }
-            } catch (e) {
-                document.getElementById('q-loading-box').style.display = 'none';
-                uploadStep.style.display = 'block';
-                alert('Ocorreu um erro ao processar sua imagem. Tente novamente.');
-            }
-        };
+                    return;
+                }
+
+                // Usa a imagem selecionada pelo cliente no picker
+                const prodImg = selectedProductImg || (document.querySelector('meta[property="og:image"]')?.content || '');
+                // Pega o titulo do produto de forma robusta (ignora h1.logo do header)
+                let prodName = '';
+                const titleSelectors = ['.js-product-name', 'h1.js-product-name', 'meta[property="og:title"]'];
+                for (const sel of titleSelectors) {
+                    const el = document.querySelector(sel);
+                    const val = el?.innerText?.trim() || el?.content?.trim() || '';
+                    if (val) { prodName = val; break; }
+                }
+                if (!prodName) prodName = document.title;
+
+                try {
+                    const fd = new FormData();
+                    fd.append('person_image', userPhoto);
+                    fd.append('whatsapp', '55' + phoneInput.value.replace(/\D/g, ''));
+                    fd.append('phone_raw', phoneInput.value);
+                    fd.append('product_name', prodName);
+                    fd.append('api_key', keyToUse);
+
+                    if (prodImg) {
+                        try { const b = await fetch(prodImg).then(r => r.blob()); fd.append('product_image', b, 'p.png'); } catch (_) { }
+                    }
+
+                    const res = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
+                    if (res.ok) {
+                        const blob = await res.blob();
+                        document.getElementById('q-loading-box').style.display = 'none';
+                        document.getElementById('q-final-view-img').src = URL.createObjectURL(blob);
+                        document.querySelector('.q-card-ia').classList.add('is-result');
+                        document.getElementById('q-step-result').style.display = 'flex';
+                        showSizeRecommendation();
+                    } else if (res.status === 401 || res.status === 403) {
+                        document.getElementById('q-loading-box').style.display = 'none';
+                        uploadStep.style.display = 'block';
+                        alert("Provas virtuais indisponiveis nesta loja no momento.");
+                    } else { throw new Error(); }
+                } catch (e) {
+                    document.getElementById('q-loading-box').style.display = 'none';
+                    uploadStep.style.display = 'block';
+                    alert('Ocorreu um erro ao processar sua imagem. Tente novamente.');
+                }
+        
+
+
+            } finally {
+
+
+                window._provouLevouBusy = false;
+
+
+            }}
+
+
+        ;
     }
 
 
