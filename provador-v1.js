@@ -129,7 +129,7 @@
             font-family: var(--font-body); font-size: 10px; font-weight: 600;
             letter-spacing: 2px; text-transform: uppercase;
             cursor: pointer; transition: background 0.25s, color 0.25s;
-            margin-bottom: 10px; box-sizing: border-box;
+            margin-top: 20px; margin-bottom: 10px; box-sizing: border-box;
         }
         .q-btn-inline-provador:hover { background: var(--q-primary); color: var(--q-bg); }
 
