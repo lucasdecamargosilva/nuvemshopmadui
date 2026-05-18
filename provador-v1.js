@@ -84,156 +84,331 @@
 
 
     const styles = `
+        /* ── Fontes ── */
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
         :root {
-            --q-primary: #000000; --q-bg: #ffffff;
-            --q-border: #000000; --q-gray: #f5f5f5;
-            --q-text: #000000; --q-text-light: #666666;
+            --q-primary: #000000;
+            --q-bg: #ffffff;
+            --q-border: #000000;
+            --q-gray: #fafafa;
+            --q-surface: #f7f6f4;
+            --q-text: #000000;
+            --q-text-light: #888888;
+            --q-line: #e8e8e8;
+            --q-danger: #cc3333;
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-body: 'DM Sans', sans-serif;
         }
 
-        @keyframes q-shake {
-            0% { transform: rotate(0deg); }
-            10% { transform: rotate(-10deg); }
-            20% { transform: rotate(10deg); }
-            30% { transform: rotate(-10deg); }
-            40% { transform: rotate(10deg); }
-            50% { transform: rotate(0deg); }
-            100% { transform: rotate(0deg); }
-        }
+        /* ── Trigger (selo sobre foto) ── */
+        @keyframes q-shake { 0%,50%,100%{transform:rotate(0deg)} 10%,30%{transform:rotate(-10deg)} 20%,40%{transform:rotate(10deg)} }
         .q-btn-trigger-ia {
             position: absolute; top: 15px; right: 15px; z-index: 100;
             background: transparent !important; border: none; padding: 0; cursor: pointer;
-            width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;
-            transition: transform 0.2s ease;
+            width: 70px; height: 70px;
+            display: flex; align-items: center; justify-content: center;
+            filter: drop-shadow(0 3px 10px rgba(0,0,0,0.18));
             animation: q-shake 3s infinite;
             pointer-events: auto;
+            transition: filter 0.2s, transform 0.2s;
         }
         .q-btn-trigger-ia:hover {
-            animation-play-state: paused; transform: scale(1.1) !important;
+            filter: drop-shadow(0 6px 18px rgba(0,0,0,0.28));
+            animation-play-state: paused;
+            transform: scale(1.08) !important;
         }
+        .q-btn-trigger-ia img { width: 100%; height: 100%; object-fit: contain; }
 
-        #q-modal-ia { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.98); z-index: 999999; align-items: center; justify-content: center; font-family: 'Inter', sans-serif; }
-        .q-card-ia { background: var(--q-bg); width: 100%; max-width: 480px; padding: 0; position: relative; color: var(--q-text); border: 1px solid var(--q-border); max-height: 94vh; display: flex; flex-direction: column; overflow: hidden; }
-        .q-content-scroll { padding: 25px 20px; overflow-y: auto; flex: 1; text-align: center; }
-        .q-close-ia { position: absolute; top: 12px; right: 12px; background: none; border: none; color: var(--q-text); cursor: pointer; font-size: 22px; z-index: 300; font-weight: 300; }
-        .q-tips-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px 0; margin: 12px 0; border-top: 1px solid var(--q-gray); border-bottom: 1px solid var(--q-gray); }
-        .q-tip-item { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 8px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--q-text-light); }
-        .q-tip-item i { color: var(--q-primary); font-size: 18px; }
-        .q-lead-form { margin: 15px 0 10px; display: flex; flex-direction: column; gap: 12px; text-align: left; }
-        .q-group { flex: 1; }
-        .q-group label { display: block; font-size: 9px; font-weight: 600; letter-spacing: 1.5px; color: var(--q-text); margin-bottom: 6px; text-transform: uppercase; }
-        .q-input { width: 100%; padding: 14px 14px; border: 1px solid var(--q-border); font-size: 16px !important; font-family: 'Inter', sans-serif; background: transparent; color: var(--q-text); outline: none; box-sizing: border-box; -webkit-text-size-adjust: 100%; }
-        .q-input:focus { border-width: 2px; padding: 13px; font-size: 16px !important; }
-        .q-btn-black { background: var(--q-primary); color: var(--q-bg); border: 1px solid var(--q-primary); width: 100%; padding: 14px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-top: 12px; transition: 0.3s; }
-        .q-btn-black:disabled { background: var(--q-gray); color: #999; border-color: var(--q-gray); cursor: not-allowed; }
-        .q-btn-black:not(:disabled):hover { background: var(--q-bg); color: var(--q-primary); }
-        .q-btn-buy { background: var(--q-primary); color: var(--q-bg); border: 1px solid var(--q-primary); width: 100%; padding: 16px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-bottom: 10px; transition: 0.3s; }
-        .q-btn-buy:hover { background: var(--q-bg); color: var(--q-primary); }
-        .q-btn-outline { background: var(--q-bg); color: var(--q-primary); border: 1px solid var(--q-border); width: 100%; padding: 14px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
-        .q-btn-outline:hover { background: var(--q-primary); color: var(--q-bg); }
-        .q-powered-footer { background: var(--q-bg); padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; border-top: 1px solid var(--q-gray); }
-        .q-quantic-logo { height: 20px; filter: brightness(0); }
-        .q-status-msg { display:none; font-size: 9px; letter-spacing: 1px; color: #ef4444; margin-top: 8px; font-weight: 600; text-align: left; text-transform: uppercase; }
-
-        /* RECOMENDACAO DE TAMANHO */
-        .q-size-group { display: flex; gap: 10px; }
-        .q-size-group .q-group { flex: 1; }
-        .q-size-result {
-            display: none; margin-top: 12px; padding: 14px; border: 2px solid var(--q-primary);
-            text-align: center; font-family: 'Inter', sans-serif;
-        }
-        .q-size-result strong {
-            font-size: 22px; letter-spacing: 2px; display: block; margin-bottom: 2px;
-        }
-        .q-size-result span {
-            font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--q-text-light);
-        }
-
-        /* SELETOR DE IMAGEM DO PRODUTO */
-        .q-content-scroll::-webkit-scrollbar { width: 4px; }
-        .q-content-scroll::-webkit-scrollbar-thumb { background: #e5e5e5; }
-
-        /* BOTAO INLINE ACIMA DO CARRINHO */
-        .q-inline-wrapper {
-            position: relative !important; width: 100% !important; margin-top: 24px !important; margin-bottom: 16px !important;
-        }
+        /* ── Inline button (acima do comprar) ── */
         .q-btn-inline-provador {
-            display: flex !important; align-items: center !important; justify-content: center !important;
-            gap: 10px !important; width: 100% !important; padding: 12px 20px !important;
-            background: var(--q-bg) !important; color: var(--q-primary) !important;
-            border: 1px solid var(--q-primary) !important; border-radius: 8px !important;
-            font-family: 'Inter', sans-serif !important; font-size: 11px !important;
-            font-weight: 600 !important; text-transform: uppercase !important;
-            letter-spacing: 2px !important; cursor: pointer !important;
-            transition: all 0.3s ease !important; text-decoration: none !important;
-            box-sizing: border-box !important;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 14px 16px;
+            background: var(--q-bg); color: var(--q-primary);
+            border: 1.5px solid var(--q-primary); border-radius: 0;
+            font-family: var(--font-body); font-size: 10px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            cursor: pointer; transition: background 0.25s, color 0.25s;
+            margin-bottom: 10px; box-sizing: border-box;
         }
-        .q-btn-inline-provador:hover {
-            background: var(--q-primary) !important; color: var(--q-bg) !important;
-        }
-        @keyframes q-float-badge { 0%, 100% { transform: translateY(0) rotate(2deg); } 50% { transform: translateY(-5px) rotate(-1deg); } }
-        .q-badge-novidade {
-            position: absolute; top: -14px; right: 10px; background: #000; color: #fff;
-            padding: 4px 12px; border-radius: 20px; font-size: 9px; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; z-index: 2;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15); font-family: 'Inter', sans-serif;
-            animation: q-float-badge 3s ease-in-out infinite;
-        }
-        @keyframes q-slide { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
-        @keyframes q-pulse-text { 0%, 100% { opacity: 0.4; transform: scale(0.98); } 50% { opacity: 1; transform: scale(1); } }
+        .q-btn-inline-provador:hover { background: var(--q-primary); color: var(--q-bg); }
 
-        #q-step-confirm {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(2px); z-index: 200; display: none;
-            align-items: center; justify-content: center; padding: 20px;
+        /* ── Modal overlay ── */
+        #q-modal-ia {
+            display: none; position: fixed; inset: 0;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 999999;
+            align-items: flex-start; justify-content: center;
+            font-family: var(--font-body);
+            padding: 20px 12px;
         }
+
+        /* ── Card ── */
+        .q-card-ia {
+            background: var(--q-bg);
+            width: 100%; max-width: 460px;
+            padding: 0; position: relative;
+            color: var(--q-text);
+            border: 1.5px solid var(--q-border);
+            max-height: 94vh;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08);
+        }
+
+        .q-content-scroll {
+            padding: 28px 22px 24px;
+            overflow-y: auto;
+            flex: 1;
+            text-align: center;
+        }
+
+        .q-close-ia {
+            position: absolute; top: 14px; right: 14px;
+            background: transparent; border: none;
+            color: var(--q-text); cursor: pointer;
+            font-size: 28px; line-height: 1; font-weight: 300;
+            z-index: 300; padding: 0; width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+            transition: opacity 0.2s;
+        }
+        .q-close-ia:hover { opacity: 0.6; }
+
+        /* ── Header (logo + título) ── */
+        #q-header-provador {
+            margin-bottom: 22px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--q-line);
+        }
+        #q-header-provador h1 {
+            margin: 0 0 12px 0;
+            font-family: var(--font-display);
+            font-size: 32px;
+            letter-spacing: 4px;
+            color: var(--q-primary);
+            text-transform: uppercase;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        /* ── Form ── */
+        .q-lead-form {
+            margin: 0 0 12px;
+            display: flex; flex-direction: column; gap: 14px;
+            text-align: left;
+        }
+        .q-group { flex: 1; }
+        .q-group label {
+            display: block;
+            font-size: 10px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--q-text-light);
+            margin-bottom: 8px;
+        }
+        .q-input {
+            width: 100%;
+            padding: 14px 14px; margin: 0;
+            background: var(--q-surface);
+            border: 1.5px solid transparent;
+            border-bottom: 1.5px solid var(--q-line);
+            border-radius: 0;
+            font-size: 16px !important;
+            font-family: var(--font-body); font-weight: 400;
+            color: var(--q-text); outline: none;
+            -webkit-appearance: none; appearance: none;
+            transition: border-color 0.2s, background 0.2s;
+            box-sizing: border-box;
+        }
+        .q-input:focus {
+            border-color: var(--q-primary);
+            background: var(--q-bg);
+        }
+        .q-input::placeholder { color: #bbb; }
+
+        .q-status-msg {
+            display: none;
+            font-size: 11px; color: var(--q-danger);
+            font-weight: 500; margin-top: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        /* ── Size group inline (altura+peso) ── */
+        .q-size-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* ── Tips grid ── */
+        .q-tips-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+            padding: 14px 0; margin: 14px 0;
+            border-top: 1px solid var(--q-line);
+            border-bottom: 1px solid var(--q-line);
+        }
+        .q-tip-item {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 6px;
+            font-size: 9px; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase;
+            color: var(--q-text-light);
+        }
+        .q-tip-item i { color: var(--q-primary); font-size: 22px; }
+
+        /* ── Buttons ── */
+        .q-btn-black {
+            background: var(--q-primary); color: var(--q-bg);
+            border: 1.5px solid var(--q-primary);
+            width: 100%; padding: 16px;
+            font-family: var(--font-body); font-weight: 600;
+            font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+            cursor: pointer; margin-top: 16px;
+            transition: background 0.25s, color 0.25s, transform 0.15s;
+        }
+        .q-btn-black:not(:disabled):hover {
+            background: var(--q-bg); color: var(--q-primary);
+        }
+        .q-btn-black:disabled {
+            background: var(--q-gray); color: #999;
+            border-color: var(--q-gray); cursor: not-allowed;
+        }
+
+        .q-btn-outline {
+            background: transparent; color: var(--q-primary);
+            border: 1.5px solid var(--q-primary);
+            width: 100%; padding: 14px;
+            font-family: var(--font-body); font-weight: 600;
+            font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+            cursor: pointer; margin-top: 8px;
+            transition: background 0.25s, color 0.25s;
+        }
+        .q-btn-outline:hover { background: var(--q-primary); color: var(--q-bg); }
+
+        .q-btn-buy {
+            background: var(--q-primary); color: var(--q-bg);
+            border: 1.5px solid var(--q-primary);
+            width: 100%; padding: 18px;
+            font-family: var(--font-body); font-weight: 600;
+            font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+            cursor: pointer; margin-bottom: 10px;
+            transition: background 0.25s, color 0.25s;
+        }
+        .q-btn-buy:hover { background: var(--q-bg); color: var(--q-primary); }
+
+        /* ── Confirm step ── */
         .q-confirm-box {
-            background: #ffffff; width: 100%; max-width: 380px; padding: 40px 30px;
-            border: 1px solid #000; text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            animation: q-popup-zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 24px 12px;
+            text-align: center;
         }
-        @keyframes q-popup-zoom { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        #q-step-confirm h2 {
+            font-family: var(--font-display);
+            font-size: 24px; letter-spacing: 3px;
+            text-transform: uppercase; color: var(--q-primary);
+            margin: 0 0 14px;
+        }
 
+        /* ── Result step ── */
+        #q-step-result {
+            display: none; flex-direction: column;
+            gap: 18px; align-items: stretch;
+        }
+        #q-result-img-col { width: 100%; }
+        #q-result-img-col img {
+            width: 100%; max-height: 60vh;
+            object-fit: contain; display: block;
+        }
+        #q-result-actions-col {
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .q-res-title {
+            font-family: var(--font-display);
+            font-size: 22px; letter-spacing: 3px;
+            text-transform: uppercase; color: var(--q-primary);
+            display: block; text-align: center;
+            margin: 12px 0 6px;
+        }
+        .q-res-subtitle {
+            font-size: 12px; color: var(--q-text-light);
+            letter-spacing: 0.5px; text-align: center;
+            margin-bottom: 14px;
+        }
+
+        /* ── Recommended size box ── */
+        .q-size-result {
+            background: var(--q-surface);
+            border: 1.5px solid var(--q-line);
+            border-radius: 0;
+            padding: 18px 14px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .q-size-result label {
+            font-size: 10px; font-weight: 600;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--q-text-light);
+            display: block; margin-bottom: 8px;
+        }
+        #q-size-value {
+            font-family: var(--font-display);
+            font-size: 56px; letter-spacing: 4px;
+            color: var(--q-primary); display: block;
+            line-height: 1; font-weight: 400;
+        }
+
+        /* ── Loading ── */
+        @keyframes q-pulse-loading {
+            0%,100% { opacity: 0.4; }
+            50%     { opacity: 1; }
+        }
+        #q-loading-box {
+            display: none; flex-direction: column;
+            align-items: center; justify-content: center;
+            min-height: 280px; gap: 18px;
+        }
+        #q-loading-box > div:first-child {
+            animation: q-pulse-loading 1.5s ease-in-out infinite;
+        }
+
+        /* ── Badge ── */
+        .q-badge-novidade {
+            display: inline-block;
+            background: var(--q-primary); color: var(--q-bg);
+            font-size: 9px; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase;
+            padding: 4px 8px; margin-bottom: 8px;
+        }
+
+        /* ── Powered by footer ── */
+        .q-powered-footer {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px;
+            font-size: 9px; font-weight: 500;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--q-text-light);
+            margin-top: 16px; padding-top: 14px;
+            border-top: 1px solid var(--q-line);
+            text-decoration: none;
+        }
+        .q-quantic-logo {
+            height: 14px; width: auto;
+            filter: brightness(0);
+            opacity: 0.7;
+        }
+
+        /* ── Photo selector ── */
+        #q-photo-selector-group {
+            margin: 14px 0;
+        }
+
+        /* ── Result mode (full-screen image) ── */
+        .q-card-ia.is-result {
+            max-width: 600px;
+        }
         @media (min-width: 768px) {
             .q-card-ia.is-result {
-                width: 820px !important; max-width: 90vw !important;
-                height: 560px !important;
+                max-width: 720px;
             }
-            .q-card-ia.is-result #q-header-provador,
-            .q-card-ia.is-result .q-powered-footer { display: none !important; }
-            .q-card-ia.is-result .q-content-scroll {
-                padding: 0 !important; height: 100% !important;
-                overflow: hidden !important; display: flex !important; flex-direction: column !important;
-            }
-            .q-card-ia.is-result #q-step-result {
-                display: flex !important; flex-direction: row !important;
-                width: 100%; height: 100%; align-items: stretch;
-            }
-            .q-card-ia.is-result #q-result-img-col {
-                width: 50% !important; height: 100% !important; margin: 0 !important;
-                border: none !important; border-right: 1px solid var(--q-border) !important;
-                position: relative !important; flex-shrink: 0;
-            }
-            .q-card-ia.is-result #q-result-img-col img {
-                position: absolute !important; top: 0; left: 0;
-                width: 100% !important; height: 100% !important;
-                object-fit: contain !important; object-position: center center !important;
-            }
-            .q-card-ia.is-result #q-result-actions-col {
-                width: 50% !important; height: 100% !important; padding: 40px !important;
-                display: flex !important; flex-direction: column; justify-content: center;
-                box-sizing: border-box; overflow-y: auto;
-            }
-            .q-card-ia.is-result .q-res-title { display: block !important; font-size: 20px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--q-text); margin-bottom: 4px; }
-            .q-card-ia.is-result .q-res-subtitle { display: block !important; font-size: 11px; color: var(--q-text-light); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 30px; }
-            .q-card-ia.is-result .q-btn-buy,
-            .q-card-ia.is-result .q-btn-outline {
-                display: flex; align-items: center; justify-content: center; gap: 8px;
-                font-size: 11px !important; padding: 18px !important;
-                font-weight: 600; letter-spacing: 2px !important; text-transform: uppercase !important;
-            }
-            .q-card-ia.is-result .q-btn-buy { margin-bottom: 12px; }
-            .q-card-ia.is-result .q-close-ia { top: 16px; right: 16px; color: var(--q-text); z-index: 300; position: absolute; }
         }
     `;
 
