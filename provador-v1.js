@@ -240,6 +240,56 @@
             gap: 12px;
         }
 
+        /* ── Face frame (Cacife-style) ── */
+        @keyframes q-frame-pulse { 0%,100%{opacity:0.3} 50%{opacity:0.7} }
+        .q-face-frame {
+            position: relative; width: 200px; height: 260px;
+            margin: 16px auto 18px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; background: var(--q-surface);
+            border-radius: 4px;
+            transition: transform 0.2s;
+        }
+        .q-face-frame:hover { transform: scale(1.015); }
+        .q-face-frame img {
+            width: 100%; height: 100%; object-fit: cover; display: none;
+        }
+        .q-face-frame img[src]:not([src=""]) { display: block; }
+        .q-face-placeholder {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 8px;
+        }
+        .q-face-placeholder i { font-size: 80px; color: #d4d4d4; }
+        .q-face-corner {
+            position: absolute; width: 20px; height: 20px;
+            border-color: var(--q-primary); border-style: solid;
+            transition: border-color 0.2s;
+        }
+        .q-face-corner-tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
+        .q-face-corner-tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
+        .q-face-corner-bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
+        .q-face-corner-br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+        /* ── Upload buttons (Cacife-style) ── */
+        .q-upload-btns {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 8px; width: 100%; margin-bottom: 18px;
+        }
+        .q-upload-btn {
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            padding: 12px 8px;
+            border: 1.5px solid var(--q-line);
+            background: transparent; color: var(--q-primary);
+            font-family: var(--font-body); font-size: 12px; font-weight: 500;
+            cursor: pointer; transition: border-color 0.2s, background 0.2s;
+            border-radius: 4px;
+        }
+        .q-upload-btn:hover {
+            border-color: var(--q-primary);
+            background: var(--q-surface);
+        }
+        .q-upload-btn i { font-size: 16px; }
+
         /* ── Tips grid ── */
         .q-tips-grid {
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
@@ -427,13 +477,21 @@
             font-size: 11px; font-weight: 500;
             letter-spacing: 1.5px; text-transform: uppercase;
             color: var(--q-text-light);
-            margin-top: 18px; padding-top: 16px;
+            margin-top: 18px; padding: 16px 0 8px;
             border-top: 1px solid var(--q-line);
             text-decoration: none;
+            flex-shrink: 0;
+            min-height: 40px;
+            overflow: visible;
         }
+        .q-powered-footer span { white-space: nowrap; }
         .q-quantic-logo {
-            height: 18px; width: auto;
+            height: 16px; width: auto;
+            max-width: 120px;
             opacity: 0.95;
+            object-fit: contain;
+            display: inline-block;
+            flex-shrink: 0;
         }
 
         /* ── Photo selector ── */
@@ -496,15 +554,26 @@
                             <div class="q-tip-item"><i class="ph ph-person"></i><span>Corpo Inteiro</span></div>
                             <div class="q-tip-item"><i class="ph ph-sun"></i><span>Boa Luz</span></div>
                         </div>
-                        <div style="display:flex;gap:15px;justify-content:center;margin-top:15px;">
-                            <div id="q-trigger-upload" style="width:90px;height:120px;border:1px solid var(--q-border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--q-gray);transition:0.3s;">
-                                <i class="ph ph-camera-plus" style="font-size:26px;color:var(--q-primary);margin-bottom:6px;"></i>
-                                <span style="font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Enviar Foto</span>
-                                <input type="file" id="q-real-input" accept="image/*" style="display:none">
+                        <!-- Face frame (estilo Cacife) -->
+                        <div class="q-face-frame" id="q-trigger-upload">
+                            <div class="q-face-corner q-face-corner-tl"></div>
+                            <div class="q-face-corner q-face-corner-tr"></div>
+                            <div class="q-face-corner q-face-corner-bl"></div>
+                            <div class="q-face-corner q-face-corner-br"></div>
+                            <img id="q-pre-img" alt="Sua foto">
+                            <div class="q-face-placeholder" id="q-face-placeholder">
+                                <i class="ph ph-user-circle" style="font-size:80px;color:#d4d4d4;"></i>
                             </div>
-                            <div id="q-pre-view" style="display:none;width:90px;height:120px;overflow:hidden;border:1px solid var(--q-border);">
-                                <img id="q-pre-img" style="width:100%;height:100%;object-fit:cover;">
-                            </div>
+                            <input type="file" id="q-real-input" accept="image/*" style="display:none">
+                        </div>
+                        <!-- Upload buttons -->
+                        <div class="q-upload-btns">
+                            <button class="q-upload-btn" id="q-btn-camera" type="button">
+                                <i class="ph ph-camera"></i> Tirar foto
+                            </button>
+                            <button class="q-upload-btn" id="q-btn-gallery" type="button">
+                                <i class="ph ph-image"></i> Da galeria
+                            </button>
                         </div>
                         <label style="display:flex;align-items:flex-start;gap:8px;margin-top:10px;cursor:pointer;font-size:11px;line-height:1.4;color:#64748b;justify-content:center;text-align:center;">
                             <input type="checkbox" id="q-accept-terms" style="margin-top:2px;cursor:pointer;accent-color:#000;">
@@ -820,11 +889,27 @@
             document.querySelector('.q-card-ia').classList.remove('is-result');
             userPhoto = null;
             realInput.value = '';
-            document.getElementById('q-pre-view').style.display = 'none';
+            const _preImg = document.getElementById('q-pre-img');
+            const _placeholder = document.getElementById('q-face-placeholder');
+            if (_preImg) { _preImg.removeAttribute('src'); _preImg.style.display = 'none'; }
+            if (_placeholder) _placeholder.style.display = 'flex';
             checkFields();
         };
 
         triggerUpload.onclick = () => realInput.click();
+        // Cacife-style: 2 botões — câmera (capture=user) e galeria
+        var _btnCamera = document.getElementById('q-btn-camera');
+        var _btnGallery = document.getElementById('q-btn-gallery');
+        if (_btnCamera) _btnCamera.onclick = function(e) {
+            e.stopPropagation();
+            realInput.setAttribute('capture', 'user');
+            realInput.click();
+        };
+        if (_btnGallery) _btnGallery.onclick = function(e) {
+            e.stopPropagation();
+            realInput.removeAttribute('capture');
+            realInput.click();
+        };
 
         phoneInput.addEventListener('input', function (e) {
             let x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
@@ -847,8 +932,11 @@
             if (userPhoto) {
                 const rd = new FileReader();
                 rd.onload = ev => {
-                    document.getElementById('q-pre-img').src = ev.target.result;
-                    document.getElementById('q-pre-view').style.display = 'block';
+                    const preImg = document.getElementById('q-pre-img');
+                    const placeholder = document.getElementById('q-face-placeholder');
+                    preImg.src = ev.target.result;
+                    preImg.style.display = 'block';
+                    if (placeholder) placeholder.style.display = 'none';
                     checkFields();
                 };
                 rd.readAsDataURL(userPhoto);
