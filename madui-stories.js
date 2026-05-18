@@ -52,7 +52,7 @@
   // ======== MAPPING (1 item por vídeo, multiplos `matches` se 1 vídeo serve vários produtos) ========
   var MAPPING = [
     {
-      public_id: 'Conjunto_Equilíbrio_Chocolate_1_mdgi4p',
+      public_id: 'Conjunto_Equilíbrio_Chocolate_1_mdgi4p',
       label: 'Conjunto Equilíbrio Chocolate',
       matches: [
         'calça legging sculpt cintura alta - chocolate',
@@ -61,10 +61,69 @@
     },
     {
       public_id: 'IMG_2353_ezfx5i',
-      label: 'Conjunto Athletic Vinho',
+      label: 'Top Athletic Vinho',
       matches: [
-        'calças legging athletic com bolso - vinho (zero transparência)',
         'top athletic camiseta - vinho (tecido duplo e 0% transparência)'
+      ]
+    },
+    {
+      public_id: 'WhatsApp_Video_2026-05-08_at_14.30.24_rsji1a',
+      label: 'Conjunto Equilíbrio Nude Amêndoa',
+      matches: [
+        'legging cintura alta equilíbrio - nude amêndoa (zero transparência)',
+        'top fit equilíbrio - nude amêndoa (tecido duplo e 0% transparência)'
+      ]
+    },
+    {
+      public_id: 'WhatsApp_Video_2026-05-08_at_14.32.37_jermtg',
+      label: 'Conjunto Athletic Preto',
+      matches: [
+        'calças legging athletic com bolso - preta (zero transparência)',
+        'top athletic camiseta - preta (tecido duplo e 0% transparência)'
+      ]
+    },
+    {
+      public_id: 'WhatsApp_Video_2026-05-08_at_14.35.14_a0tnhz',
+      label: 'Macaquinho Sculpt Chocolate',
+      matches: [
+        'macaquinho sculpt - chocolate (zero transparência)'
+      ]
+    },
+    {
+      public_id: 'WhatsApp_Video_2026-05-08_at_14.37.31_wxlixq',
+      label: 'Bermuda Run Uva',
+      matches: [
+        'bermuda run lisa com bolso lateral - uva (zero transparência)'
+      ]
+    },
+    {
+      public_id: 'WhatsApp_Video_2026-05-08_at_14.38.36_pcae0h',
+      label: 'Short Cross Vinho + Top Cross Uva',
+      matches: [
+        'short cross sem costura - vinho (zero transparência)',
+        'top cross athletic com alças ajustáveis - uva (tecido duplo e 0% transparência)'
+      ]
+    },
+    {
+      public_id: 'WhatsApp_Video_2026-05-08_at_14.40.55_tlhyzr',
+      label: 'Bermuda Run Preta',
+      matches: [
+        'bermuda run lisa com bolso lateral - preta (zero transparência)'
+      ]
+    },
+    {
+      public_id: 'WhatsApp_Video_2026-05-08_at_14.42.35_tpw6m9',
+      label: 'Conjunto Cross Preto',
+      matches: [
+        'short cross sem costura - preta (zero transparência)',
+        'top cross athletic com alças ajustáveis - preto (tecido duplo e 0% transparência)'
+      ]
+    },
+    {
+      public_id: 'WhatsApp_Video_2026-05-08_at_14.44.14_dhwbrh',
+      label: 'Calça Athletic Vinho',
+      matches: [
+        'calças legging athletic com bolso - vinho (zero transparência)'
       ]
     }
   ];
