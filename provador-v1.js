@@ -356,18 +356,42 @@
             line-height: 1; font-weight: 400;
         }
 
-        /* ── Loading ── */
-        @keyframes q-pulse-loading {
-            0%,100% { opacity: 0.4; }
-            50%     { opacity: 1; }
-        }
+        /* ── Loading com transição texto/logo ── */
+        @keyframes q-slide { from{transform:translateX(-100%)} to{transform:translateX(100%)} }
+        @keyframes q-alt-show { 0%,5%{opacity:0;transform:translateY(6px)} 15%,45%{opacity:1;transform:translateY(0)} 55%,100%{opacity:0;transform:translateY(-6px)} }
+        @keyframes q-alt-hide { 0%,55%{opacity:0;transform:translateY(6px)} 65%,95%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-6px)} }
         #q-loading-box {
-            display: none; flex-direction: column;
-            align-items: center; justify-content: center;
-            min-height: 280px; gap: 18px;
+            display: none; padding: 40px 20px; text-align: center;
+            flex-direction: column; align-items: center; justify-content: center;
+            min-height: 280px; gap: 22px;
         }
-        #q-loading-box > div:first-child {
-            animation: q-pulse-loading 1.5s ease-in-out infinite;
+        .q-loading-texts {
+            position: relative; height: 38px; width: 100%;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 8px;
+        }
+        .q-loading-t1, .q-loading-t2 {
+            position: absolute; width: 100%;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .q-loading-t1 {
+            font-family: var(--font-display); font-size: 20px; letter-spacing: 4px;
+            text-transform: uppercase; color: var(--q-primary);
+            animation: q-alt-show 3.6s ease-in-out infinite;
+        }
+        .q-loading-t2 {
+            animation: q-alt-hide 3.6s ease-in-out infinite;
+            text-decoration: none; opacity: 0;
+        }
+        .q-loading-t2 span {
+            font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+            color: var(--q-text-light); font-family: var(--font-body);
+        }
+        .q-loading-t2 img { height: 22px; width: auto; opacity: 0.85; }
+        .q-loading-bar { height: 2px; background: var(--q-line); width: 100%; position: relative; overflow: hidden; }
+        .q-loading-bar > div {
+            position: absolute; top: 0; left: 0; height: 100%; width: 35%;
+            background: var(--q-primary); animation: q-slide 1.4s infinite linear;
         }
 
         /* ── Badge ── */
@@ -382,18 +406,17 @@
         /* ── Powered by footer ── */
         .q-powered-footer {
             display: flex; align-items: center; justify-content: center;
-            gap: 8px;
-            font-size: 9px; font-weight: 500;
+            gap: 10px;
+            font-size: 11px; font-weight: 500;
             letter-spacing: 1.5px; text-transform: uppercase;
             color: var(--q-text-light);
-            margin-top: 16px; padding-top: 14px;
+            margin-top: 18px; padding-top: 16px;
             border-top: 1px solid var(--q-line);
             text-decoration: none;
         }
         .q-quantic-logo {
-            height: 14px; width: auto;
-            filter: brightness(0);
-            opacity: 0.7;
+            height: 28px; width: auto;
+            opacity: 0.95;
         }
 
         /* ── Photo selector ── */
@@ -486,11 +509,15 @@
                         </div>
                     </div>
 
-                    <div style="display:none;padding:60px 0;text-align:center;" id="q-loading-box">
-                        <div style="font-weight:600;font-size:12px;letter-spacing:3px;text-transform:uppercase;margin-bottom:20px;animation:q-pulse-text 1.5s infinite ease-in-out;">Gerando Prova Virtual...</div>
-                        <div style="height:1px;background:var(--q-gray);width:100%;position:relative;overflow:hidden;">
-                            <div style="position:absolute;top:0;left:0;height:100%;width:30%;background:var(--q-primary);animation:q-slide 1.5s infinite linear;"></div>
+                    <div id="q-loading-box">
+                        <div class="q-loading-texts">
+                            <div class="q-loading-t1">Gerando sua prova...</div>
+                            <a href="https://provoulevou.com.br?utm_source=widget&utm_medium=lojista&utm_campaign=madui" target="_blank" class="q-loading-t2">
+                                <span>Powered by</span>
+                                <img src="https://i.ibb.co/MD3B4FQf/Logo-provou-preto-1.png" alt="Provou Levou">
+                            </a>
                         </div>
+                        <div class="q-loading-bar"><div></div></div>
                     </div>
 
                     <div id="q-step-result" style="display:none;flex-direction:column;align-items:center;">
@@ -509,9 +536,9 @@
                         </div>
                     </div>
                 </div>
-                <a href="https://provoulevou.com.br?utm_source=widget&utm_medium=lojista&utm_campaign=madui" target="_blank" class="q-powered-footer" style="text-decoration:none;">
-                    <span style="font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--q-text-light);">Powered by</span>
-                    <img src="https://provoulevou.com.br/assets/provoulevou-logo.png" class="q-quantic-logo" alt="Provou Levou - Provador Virtual com IA">
+                <a href="https://provoulevou.com.br?utm_source=widget&utm_medium=lojista&utm_campaign=madui" target="_blank" class="q-powered-footer">
+                    <span>Powered by</span>
+                    <img src="https://i.ibb.co/MD3B4FQf/Logo-provou-preto-1.png" class="q-quantic-logo" alt="Provou Levou - Provador Virtual com IA">
                 </a>
             </div>
         </div>
@@ -816,8 +843,8 @@
             const _gNums = (phoneInput.value || '').replace(/\D/g, '');
             const _gPhoneOk = (_gNums.length === 10 || _gNums.length === 11) && /^[1-9][1-9]/.test(_gNums) && (_gNums.length === 10 || _gNums[2] === '9');
             if (!_gPhoneOk) { phoneInput.focus(); return; }
-            confirmStep.style.display = 'flex';
-            confirmStep.style.pointerEvents = 'auto';
+            // Sem pop-up de confirmação — dispara geração direto
+            confirmBtnYes.onclick();
         };
 
         confirmBtnNo.onclick = () => {
