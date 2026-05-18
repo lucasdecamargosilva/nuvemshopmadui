@@ -656,10 +656,16 @@
         openBtn.setAttribute('aria-label', 'Abrir Provador Virtual');
         openBtn.innerHTML = stampImageHTML;
 
-        const trayImgContainers = ['.image-show', '.box-gallery', '.product-colum-left'];
+        // Nuvemshop primeiro (Madui), depois Tray (compat), depois genéricos
+        const trayImgContainers = [
+            '.js-product-slide', '.js-swiper-product',
+            '[data-store^="product-image-"]', '.product-image-main',
+            '.js-product-slide-img', '.product-slider-image',
+            '.image-show', '.box-gallery', '.product-colum-left'
+        ];
         const fallbackContainers = [
             '.product__media-wrapper', '.product-gallery__media', '.product__media',
-            '.product-image-main', '.product-media-container', '[data-media-id]',
+            '.product-media-container', '[data-media-id]',
             '.product__media-item', '.product-gallery', '.product-single__media', '.media-gallery'
         ];
 
@@ -1244,11 +1250,16 @@
         const isProductPage =
             window.__MC_FORCE_INIT__ === true ||
             path.includes('/produto/') ||
+            path.includes('/produtos/') ||
             path.includes('/p/') ||
             path.includes('/products/') ||
             document.getElementById('product-container') !== null ||
             document.getElementById('form_comprar') !== null ||
-            document.querySelector('.box-gallery') !== null;
+            document.querySelector('.box-gallery') !== null ||
+            // Nuvemshop signals
+            document.querySelector('.js-product-slide') !== null ||
+            document.querySelector('[data-store^="product-image-"]') !== null ||
+            document.querySelector('input[name="variation_id"]') !== null;
 
         LOG.info('Página atual: "' + path + '"  →  é página de produto: ' + isProductPage);
 
