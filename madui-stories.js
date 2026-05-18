@@ -52,7 +52,7 @@
   // ======== MAPPING (1 item por vídeo, multiplos `matches` se 1 vídeo serve vários produtos) ========
   var MAPPING = [
     {
-      public_id: 'Conjunto_Equilíbrio_Chocolate_1_mdgi4p',
+      public_id: 'Conjunto_Equilíbrio_Chocolate_1_mdgi4p',
       label: 'Conjunto Equilíbrio Chocolate',
       matches: [
         'calça legging sculpt cintura alta - chocolate',
