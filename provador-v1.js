@@ -310,16 +310,33 @@
 
         /* ── Result step ── */
         #q-step-result {
-            display: none; flex-direction: column;
-            gap: 18px; align-items: stretch;
+            display: none;
+            flex-direction: column;
+            gap: 20px; align-items: stretch;
         }
-        #q-result-img-col { width: 100%; }
+        #q-result-img-col { width: 100%; margin-bottom: 0; }
         #q-result-img-col img {
             width: 100%; max-height: 60vh;
             object-fit: contain; display: block;
         }
         #q-result-actions-col {
             display: flex; flex-direction: column; gap: 8px;
+        }
+        /* Desktop: imagem à esquerda, recomendação + ações à direita */
+        @media (min-width: 720px) {
+            #q-step-result {
+                flex-direction: row !important;
+                align-items: flex-start;
+                gap: 28px;
+            }
+            #q-result-img-col {
+                flex: 1 1 55%;
+                max-width: 55%;
+            }
+            #q-result-actions-col {
+                flex: 1 1 45%;
+                max-width: 45%;
+            }
         }
         .q-res-title {
             font-family: var(--font-display);
@@ -424,13 +441,13 @@
             margin: 14px 0;
         }
 
-        /* ── Result mode (full-screen image) ── */
+        /* ── Result mode (mais largo pra acomodar 2 colunas no desktop) ── */
         .q-card-ia.is-result {
             max-width: 600px;
         }
         @media (min-width: 768px) {
             .q-card-ia.is-result {
-                max-width: 720px;
+                max-width: 880px;
             }
         }
     `;
@@ -520,11 +537,11 @@
                         <div class="q-loading-bar"><div></div></div>
                     </div>
 
-                    <div id="q-step-result" style="display:none;flex-direction:column;align-items:center;">
-                        <div id="q-result-img-col" style="width:100%;border:1px solid var(--q-border);margin-bottom:30px;background:var(--q-gray);">
+                    <div id="q-step-result" style="display:none;">
+                        <div id="q-result-img-col" style="border:1px solid var(--q-border);background:var(--q-gray);">
                             <img id="q-final-view-img" style="width:100%;height:auto;display:block;">
                         </div>
-                        <div id="q-result-actions-col" style="width:100%;">
+                        <div id="q-result-actions-col">
                             <span class="q-res-title" style="display:none;">Provador Virtual</span>
                             <span class="q-res-subtitle" style="display:none;">Visualize como a peca fica em voce</span>
                             <div id="q-size-result" class="q-size-result" style="display:none;margin-bottom:20px;">
