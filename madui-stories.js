@@ -58,6 +58,14 @@
         'calça legging sculpt cintura alta - chocolate',
         'top recorte sculpt chocolate'
       ]
+    },
+    {
+      public_id: 'IMG_2353_ezfx5i',
+      label: 'Conjunto Athletic Vinho',
+      matches: [
+        'calças legging athletic com bolso - vinho (zero transparência)',
+        'top athletic camiseta - vinho (tecido duplo e 0% transparência)'
+      ]
     }
   ];
 
