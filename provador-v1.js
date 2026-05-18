@@ -415,7 +415,7 @@
             text-decoration: none;
         }
         .q-quantic-logo {
-            height: 28px; width: auto;
+            height: 18px; width: auto;
             opacity: 0.95;
         }
 
