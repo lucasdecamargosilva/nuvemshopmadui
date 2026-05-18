@@ -712,6 +712,7 @@
                             <img id="q-final-view-img" style="width:100%;height:auto;display:block;">
                         </div>
                         <div id="q-result-actions-col">
+                            <div id="q-provas-restantes-result" class="q-provas-msg" style="text-align:center;margin-bottom:8px;"></div>
                             <span class="q-res-title" style="display:none;">Provador Virtual</span>
                             <span class="q-res-subtitle" style="display:none;">Visualize como a peca fica em voce</span>
                             <div id="q-size-result" class="q-size-result" style="display:none;margin-bottom:20px;">
@@ -1018,6 +1019,101 @@
             checkFields();
         });
 
+        // ── Contador de provas restantes (debounced) ──
+        let _provasDebounce;
+        async function _checkProvasRestantes() {
+            const _els = document.querySelectorAll('.q-provas-msg');
+            if (!_els.length) return;
+            const nums = phoneInput.value.replace(/\D/g, '');
+            const phoneOk = isValidBRPhone(nums);
+            const phone = phoneOk ? '55' + nums : '0';
+            try {
+                const r = await fetch(WEBHOOK_CHECK_LIMIT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const d = await r.json();
+                const LIMIT = d.limit || LIMIT_PROVAS;
+                const used = Math.max(d.phone_count || 0, d.ip_count || 0, d.count || 0);
+                const restantes = Math.max(0, LIMIT - used);
+                if (restantes > 0) {
+                    const _txt = restantes + (restantes === 1 ? ' prova restante hoje' : ' provas restantes hoje');
+                    _els.forEach(el => { el.textContent = _txt; el.classList.remove('is-warn'); });
+                } else {
+                    _els.forEach(el => { el.textContent = 'Limite de ' + LIMIT + ' provas atingido — pague R$1 via PIX para mais uma.'; el.classList.add('is-warn'); });
+                }
+            } catch(_) { _els.forEach(el => { el.textContent = ''; el.classList.remove('is-warn'); }); }
+        }
+        phoneInput.addEventListener('input', () => {
+            clearTimeout(_provasDebounce);
+            _provasDebounce = setTimeout(_checkProvasRestantes, 600);
+        });
+        setTimeout(_checkProvasRestantes, 300);
+
+        // ── PIX flow ──
+        let pixPollingTimer = null;
+        let pixPaymentId = null;
+        function stopPixPolling() {
+            if (pixPollingTimer) { clearInterval(pixPollingTimer); pixPollingTimer = null; }
+        }
+        function showPixScreen() {
+            document.getElementById('q-step-upload').style.display = 'none';
+            document.getElementById('q-step-pix').style.display = 'flex';
+        }
+        function hidePixScreen() {
+            document.getElementById('q-step-pix').style.display = 'none';
+            stopPixPolling();
+        }
+        async function createPixAndPoll() {
+            showPixScreen();
+            const phone = '55' + phoneInput.value.replace(/\D/g, '');
+            try {
+                const resp = await fetch(WEBHOOK_PIX, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'cliente@provoulevou.com.br', phone })
+                });
+                const pix = await resp.json();
+                if (!pix.payment_id || !pix.qr_code) throw new Error('PIX inválido');
+                document.getElementById('q-pix-qr-img').src = 'data:image/png;base64,' + pix.qr_code_base64;
+                document.getElementById('q-pix-code').value = pix.qr_code;
+                let attempts = 0;
+                pixPollingTimer = setInterval(async () => {
+                    attempts++;
+                    if (attempts > 100) { stopPixPolling(); return; }
+                    try {
+                        const sr = await fetch(WEBHOOK_PIX_STATUS + '?payment_id=' + pix.payment_id);
+                        const st = await sr.json();
+                        if (st.status === 'approved') {
+                            stopPixPolling();
+                            document.getElementById('q-pix-status-msg').textContent = 'Pagamento confirmado!';
+                            document.getElementById('q-pix-status-msg').className = 'q-pix-status q-pix-approved';
+                            setTimeout(() => {
+                                hidePixScreen();
+                                pixPaymentId = pix.payment_id;
+                                document.getElementById('q-step-upload').style.display = 'none';
+                                confirmBtnYes.onclick();
+                            }, 1200);
+                        }
+                    } catch (_) {}
+                }, 3000);
+            } catch (e) {
+                hidePixScreen();
+                document.getElementById('q-step-upload').style.display = 'block';
+            }
+        }
+        document.getElementById('q-pix-copy-btn').onclick = function() {
+            const input = document.getElementById('q-pix-code');
+            input.select(); document.execCommand('copy');
+            this.textContent = 'Copiado!';
+            setTimeout(() => { this.textContent = 'Copiar'; }, 1500);
+        };
+        document.getElementById('q-pix-cancel').onclick = function() {
+            hidePixScreen();
+            document.getElementById('q-step-upload').style.display = 'block';
+        };
+
         function checkFields() {
             const nums = phoneInput.value.replace(/\D/g, '');
             const phoneOk = isValidBRPhone(nums);
@@ -1044,11 +1140,30 @@
             }
         };
 
-        genBtn.onclick = () => {
+        genBtn.onclick = async () => {
             if (!userPhoto) return;
             const _gNums = (phoneInput.value || '').replace(/\D/g, '');
-            const _gPhoneOk = (_gNums.length === 10 || _gNums.length === 11) && /^[1-9][1-9]/.test(_gNums) && (_gNums.length === 10 || _gNums[2] === '9');
+            const _gPhoneOk = isValidBRPhone(_gNums);
             if (!_gPhoneOk) { phoneInput.focus(); return; }
+
+            const phone = '55' + phoneInput.value.replace(/\D/g, '');
+            genBtn.disabled = true;
+
+            try {
+                const resp = await fetch(WEBHOOK_CHECK_LIMIT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await resp.json();
+                if (data.limited) {
+                    genBtn.disabled = false;
+                    createPixAndPoll();
+                    return;
+                }
+            } catch (_) { /* se falhar, libera geração */ }
+
+            genBtn.disabled = false;
             // Sem pop-up de confirmação — dispara geração direto
             confirmBtnYes.onclick();
         };
