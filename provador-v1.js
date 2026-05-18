@@ -52,6 +52,10 @@
     window.PROVOU_LEVOU_API_KEY = apiKey;
 
     const WEBHOOK_URL = 'https://n8n.segredosdodrop.com/webhook/quantic-materialize';
+    const WEBHOOK_CHECK_LIMIT = 'https://n8n.segredosdodrop.com/webhook/madui-check-limit';
+    const WEBHOOK_PIX = 'https://n8n.segredosdodrop.com/webhook/cacife-pix';
+    const WEBHOOK_PIX_STATUS = 'https://n8n.segredosdodrop.com/webhook/cacife-pix-status';
+    const LIMIT_PROVAS = 2;
 
 
     // ─── LOCK / UNLOCK SCROLL ────────────────────────────────────────────────────
@@ -104,7 +108,7 @@
         /* ── Trigger (selo sobre foto) ── */
         @keyframes q-shake { 0%,50%,100%{transform:rotate(0deg)} 10%,30%{transform:rotate(-10deg)} 20%,40%{transform:rotate(10deg)} }
         .q-btn-trigger-ia {
-            position: absolute; top: 60px; right: 15px; z-index: 100;
+            position: absolute; top: 15px; right: 15px; z-index: 100;
             background: transparent !important; border: none; padding: 0; cursor: pointer;
             width: 70px; height: 70px;
             display: flex; align-items: center; justify-content: center;
@@ -238,6 +242,88 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
+        }
+
+        /* ── Provas restantes counter ── */
+        .q-provas-msg:empty { display: none; }
+        .q-provas-msg {
+            font-size: 13px; margin-top: 10px; letter-spacing: 0.3px;
+            color: var(--q-primary); font-weight: 500;
+            background: var(--q-surface);
+            border: 1px solid var(--q-line);
+            border-radius: 6px;
+            padding: 10px 14px;
+            text-align: center;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+        .q-provas-msg.is-warn {
+            color: var(--q-danger);
+            background: rgba(204,51,51,0.08);
+            border-color: rgba(204,51,51,0.3);
+            font-weight: 600;
+        }
+
+        /* ── PIX modal step ── */
+        #q-step-pix {
+            display: none; padding: 28px 22px; text-align: center;
+            flex-direction: column; gap: 14px; align-items: stretch;
+        }
+        #q-step-pix h2 {
+            font-family: var(--font-display);
+            font-size: 24px; letter-spacing: 3px;
+            color: var(--q-primary); text-transform: uppercase;
+            font-weight: 400; line-height: 1;
+            margin: 0;
+        }
+        .q-pix-subtitle {
+            font-size: 13px; color: var(--q-text-light);
+            line-height: 1.5; margin: 0;
+        }
+        .q-pix-qr {
+            background: #fff; padding: 16px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1.5px solid var(--q-line);
+            border-radius: 4px;
+            margin: 8px 0;
+        }
+        .q-pix-qr img {
+            width: 200px; height: 200px; display: block;
+        }
+        .q-pix-copiacola {
+            display: flex; gap: 6px; align-items: stretch;
+        }
+        .q-pix-copiacola input {
+            flex: 1; padding: 10px;
+            font-family: ui-monospace, monospace; font-size: 11px;
+            border: 1.5px solid var(--q-line);
+            background: var(--q-surface);
+            border-radius: 4px;
+            outline: none;
+        }
+        .q-pix-copiacola button {
+            padding: 10px 16px;
+            background: var(--q-primary); color: var(--q-bg);
+            border: none; border-radius: 4px;
+            font-family: var(--font-body); font-size: 11px;
+            font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+            cursor: pointer;
+        }
+        .q-pix-status {
+            font-size: 13px; font-weight: 600;
+            padding: 12px; border-radius: 4px;
+        }
+        .q-pix-status.q-pix-waiting {
+            background: var(--q-surface); color: var(--q-text-light);
+            animation: q-pix-pulse 1.5s infinite ease-in-out;
+        }
+        .q-pix-status.q-pix-approved {
+            background: #e8f5e8; color: #2e7d32;
+        }
+        @keyframes q-pix-pulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+        .q-pix-cancel {
+            font-size: 12px; color: var(--q-text-light);
+            text-decoration: underline; cursor: pointer;
+            margin: 0; text-align: center;
         }
 
         /* ── Face frame (Cacife-style) ── */
@@ -462,7 +548,6 @@
         }
 
         /* ── Badge ── */
-        .q-inline-wrapper { margin-top: 20px; }
         .q-badge-novidade {
             display: inline-block;
             background: var(--q-primary); color: var(--q-bg);
@@ -532,6 +617,7 @@
                                 <label>Seu Celular</label>
                                 <input type="tel" id="q-phone" class="q-input" placeholder="(11) 99999-9999" maxlength="15">
                                 <div id="q-phone-error" class="q-status-msg">Insira um numero valido</div>
+                                <div id="q-provas-restantes" class="q-provas-msg"></div>
                             </div>
                             <div id="q-size-fields" style="display:block;">
                                 <div class="q-size-group">
@@ -594,6 +680,20 @@
                             <button class="q-btn-black" id="q-btn-confirm-yes" style="margin-top:0;padding:20px 0;">SIM, GERAR FOTO</button>
                             <button class="q-btn-outline" id="q-btn-confirm-no" style="margin-top:15px;border-color:#ef4444;color:#ef4444;padding:18px 0;background:none;">NAO, QUERO TROCAR</button>
                         </div>
+                    </div>
+
+                    <!-- PIX step (Cacife-style) -->
+                    <div id="q-step-pix">
+                        <h2>Prova Extra</h2>
+                        <p class="q-pix-subtitle">Limite de 2 provas atingido.<br>Pague R$1 via PIX para mais uma:</p>
+                        <p style="font-size:11px;color:var(--q-text-light);margin:4px 0 0;line-height:1.5;text-align:center;">&#8505;&#65039; Cobran&#231;a feita pela Provou Levou, n&#227;o pela loja</p>
+                        <div class="q-pix-qr"><img id="q-pix-qr-img" alt="QR Code PIX"></div>
+                        <div class="q-pix-copiacola">
+                            <input type="text" id="q-pix-code" readonly placeholder="C&#243;digo PIX...">
+                            <button id="q-pix-copy-btn" type="button">Copiar</button>
+                        </div>
+                        <div id="q-pix-status-msg" class="q-pix-status q-pix-waiting">Aguardando pagamento...</div>
+                        <p class="q-pix-cancel" id="q-pix-cancel">Cancelar</p>
                     </div>
 
                     <div id="q-loading-box">
