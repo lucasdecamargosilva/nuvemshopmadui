@@ -666,7 +666,7 @@
                             <input type="checkbox" id="q-accept-terms" style="margin-top:2px;cursor:pointer;accent-color:#000;">
                             Ao continuar, concordo com os <a href="http://provoulevou.com.br/termos.html" target="_blank" style="color:#000;text-decoration:underline;">Termos e Condicoes</a>
                         </label>
-                        <button class="q-btn-black" id="q-btn-generate" disabled>Ver no meu corpo</button>
+                        <button class="q-btn-black" id="q-btn-generate">Ver no meu corpo</button>
                     </div>
 
                     <div id="q-step-confirm" style="display:none;pointer-events:none;">
