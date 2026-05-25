@@ -817,6 +817,23 @@
         const realInput = document.getElementById('q-real-input');
         const triggerUpload = document.getElementById('q-trigger-upload');
         const phoneInput = document.getElementById('q-phone');
+
+        // ── Pré-preenche último número usado (localStorage) ──
+        const _PL_LAST_PHONE = 'pl_last_phone';
+        try {
+            const saved = localStorage.getItem(_PL_LAST_PHONE);
+            if (saved && /^\d{10,11}$/.test(saved)) {
+                const m = saved.match(/(\d{2})(\d{4,5})(\d{4})/);
+                if (m) phoneInput.value = '(' + m[1] + ') ' + m[2] + '-' + m[3];
+            }
+        } catch (_) {}
+        function _savePhoneIfValid() {
+            const nums = phoneInput.value.replace(/\D/g, '');
+            if (/^\d{10,11}$/.test(nums)) {
+                try { localStorage.setItem(_PL_LAST_PHONE, nums); } catch (_) {}
+            }
+        }
+        phoneInput.addEventListener('blur', _savePhoneIfValid);
         const heightInput = document.getElementById('q-height');
         const weightInput = document.getElementById('q-weight');
 
