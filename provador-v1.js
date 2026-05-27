@@ -1295,16 +1295,7 @@
                         try { const b = await fetch(prodImg).then(r => r.blob()); fd.append('product_image', b, 'p.png'); } catch (_) { }
                     }
 
-                    const res = await (async () => {
-                        let _d = 1500;
-                        for (let _i = 0; _i < 6; _i++) {
-                            const _r = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
-                            if (_r.ok || _r.status === 400 || _r.status === 401 || _r.status === 403) return _r;
-                            if (_i === 5) return _r;
-                            await new Promise(_x => setTimeout(_x, _d + Math.random() * 500));
-                            _d *= 2;
-                        }
-                    })();
+                    const res = await fetch(WEBHOOK_URL, { method: 'POST', body: fd });
                     if (res.ok) {
                         const blob = await res.blob();
                         document.getElementById('q-loading-box').style.display = 'none';
