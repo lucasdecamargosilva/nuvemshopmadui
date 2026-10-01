@@ -1365,3 +1365,228 @@ const fd = new FormData();
         else init();
     }
 })();
+
+/* ── PL_RESULT_LAYOUT v1 (30/09/2026) — layout padrão da tela de resultado ─────────
+   Camada ADITIVA: só reorganiza o que o widget já montou quando a foto do resultado
+   aparece. Não mexe em compra/PIX/limite/lentes. Se der erro, não faz nada.
+   - esconde título "Veja como ficou", selos e escassez
+   - preço: cheio riscado + à vista grande com -% ao lado + "à vista com desconto" + parcela
+   - botões: Comprar no site · ou · Comprar pelo WhatsApp (se a loja tiver) · Tentar outra foto
+   Os elementos originais (#q-result-prodprice / #q-result-installment) ficam no DOM,
+   escondidos, porque outras partes do widget leem o texto deles. */
+(function () {
+    var PL_WA = '5527992013007';
+    if (window.__plResultLayout) return; window.__plResultLayout = 1;
+    function $(id) { return document.getElementById(id); }
+    function num(t) { var m = String(t || '').replace(/\s/g, '').match(/(\d{1,3}(?:\.\d{3})*|\d+),(\d{2})/); return m ? parseFloat(m[1].replace(/\./g, '') + '.' + m[2]) : 0; }
+    function brl(n) { return 'R$ ' + n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+    function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function vis(el) { return !!(el && el.offsetParent !== null); }
+    function css() {
+        if ($('pl-rl-css')) return;
+        var s = document.createElement('style'); s.id = 'pl-rl-css';
+        s.textContent =
+            '.q-card-ia .q-res-title, #q-seals, #q-scarcity, #q-fakebuy { display: none !important; }' +
+            '#q-result-prodinfo #q-result-prodprice, #q-result-prodinfo #q-result-installment, #q-result-pix { display: none !important; }' +
+            '#q-result-prodname { font-size: 15px !important; line-height: 1.3 !important; }' +
+            '.pl-rl-price { margin-top: 4px; font-family: inherit; }' +
+            '.pl-rl-old { font-size: 13.5px; color: var(--c-muted, #777); text-decoration: line-through; line-height: 1.2; }' +
+            '.pl-rl-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }' +
+            '.pl-rl-big { font-size: 28px; font-weight: 800; line-height: 1.1; color: var(--c-primary, var(--c-ink, #111)); letter-spacing: 0; }' +
+            '.pl-rl-tag { background: #16a34a; color: #fff; font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 20px; white-space: nowrap; line-height: 1; }' +
+            '.pl-rl-sub { font-size: 13px; color: var(--c-muted, #777); margin-top: 2px; }' +
+            '.pl-rl-inst { font-size: 14px; color: var(--c-ink, #111); margin-top: 3px; }' +
+            '.pl-rl-inst b { font-weight: 700; }' +
+            '#q-btn-buy-now.pl-rl-buy { margin-top: 20px !important; font-size: 15px !important; padding-top: 14px !important; padding-bottom: 14px !important; text-transform: none !important; letter-spacing: 0 !important; }' +
+            '.pl-rl-or { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-size: 12px; color: var(--c-muted, #777); font-family: inherit; }' +
+            '.pl-rl-or:before, .pl-rl-or:after { content: ""; flex: 1; height: 1px; background: var(--c-line, #e5e5e5); }' +
+            '.pl-rl-wa { display: flex !important; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 8px; padding: 14px; border: 0; border-radius: 50px; background: #25D366 !important; color: #fff !important; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; text-transform: none; letter-spacing: 0; box-sizing: border-box; }' +
+            '.pl-rl-wa:hover { background: #1ebe5b !important; }' +
+            '.pl-rl-wa svg { width: 18px; height: 18px; flex-shrink: 0; }' +
+            '.pl-rl-retry { margin-top: 10px !important; }' +
+            /* os 3 botões SEMPRE no mesmo formato (só a cor muda) */
+            '#q-btn-buy-now.pl-rl-buy, #pl-rl-wa.pl-rl-wa, .pl-rl-retry { display: flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; width: 100% !important; min-height: 50px !important; height: auto !important; padding: 12px 16px !important; box-sizing: border-box !important; border-radius: 50px !important; font-family: inherit !important; font-size: 15px !important; font-weight: 600 !important; line-height: 1.2 !important; text-transform: none !important; letter-spacing: 0 !important; text-decoration: none !important; box-shadow: none !important; }' +
+            '.pl-rl-retry { background: #fff !important; color: var(--c-ink, #111) !important; border: 1.5px solid var(--c-line, #d9d9d9) !important; }' +
+            '#q-btn-buy-now.pl-rl-buy, #pl-rl-wa.pl-rl-wa { border: 0 !important; }' +
+            '.pl-rl-retry i { font-size: 17px; }';
+        document.head.appendChild(s);
+    }
+    // Preço à vista/PIX exibido na página (Tray "à vista", Nuvemshop/Bagy/Shopify "no Pix"/"com Pix").
+    // Só olha a área de preço do produto PRINCIPAL (fora de cards/carrosséis/relacionados e do modal),
+    // senão pegaria o "à vista" de outro produto da vitrine.
+    function avista(full) {
+        if (!full) return 0;
+        var sel = '[class*="price"],[class*="Price"],[class*="preco"],[class*="pix"],[class*="Pix"],[class*="vista"],[class*="desconto"],[class*="discount"],[class*="payment"],[class*="parcel"],[class*="installment"]';
+        var bad = '[class*="card"],[class*="related"],[class*="relacionad"],[class*="carousel"],[class*="swiper"],[class*="slick"],[class*="vitrine"],[class*="shelf"],[class*="recommend"],[class*="upsell"],#q-modal-ia,header,footer,nav';
+        var txts = [];
+        document.querySelectorAll(sel).forEach(function (el) {
+            if (el.closest(bad) || el.offsetParent === null) return;
+            var t = (el.innerText || '').replace(/\s+/g, ' ');
+            if (t && t.length < 400) txts.push(t);
+        });
+        for (var i = 0; i < txts.length; i++) {
+            var m, re = /R\$\s*([\d.]+,\d{2})\s*(?:à vista|a vista|no pix|com pix|via pix|pix|no boleto)/ig;
+            while ((m = re.exec(txts[i]))) { var v = num(m[1]); if (v < full && v > full * 0.5) return v; }
+            var p = txts[i].match(/(\d{1,2})\s*%\s*(?:de\s*)?(?:desconto|off|desc\.?)\s*(?:pagando\s*)?(?:à vista\s*)?(?:no|com|via|pelo)\s*pix/i);
+            if (p) { var pc = parseInt(p[1], 10); if (pc > 0 && pc < 50) return Math.round(full * (100 - pc)) / 100; }
+        }
+        return 0;
+    }
+    function parcela(t) {
+        t = String(t || '').normalize('NFC').replace(/\s+/g, ' ').trim();
+        var m = t.match(/(\d+)\s*x\s*(?:de\s*)?(R?\$?\s*[\d.,]+)\s*(.*)$/i);
+        if (!m) return t ? esc(t) : '';
+        if (parseInt(m[1], 10) < 2 || !(num(m[2]) > 0)) return '';   // "1x de R$ 0,00" = lixo da página
+        var rest = (m[3] || '').toLowerCase().replace(/[^a-zà-ú ]/gi, ' ').replace(/\s+/g, ' ').trim();
+        rest = rest.replace(/\s*(no|do)\s+cart[aã]o.*$/i, '').trim();
+        if (!rest) rest = 'sem juros';
+        return 'ou <b>' + m[1] + 'x de ' + esc(m[2].replace(/\s+/g, ' ').replace(/^\$/, 'R$')) + '</b> ' + esc(rest) + ' no cartão';
+    }
+    var WA_SVG = '<svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.9c0 2.1.55 4.06 1.6 5.8L2 22l4.44-1.65a9.9 9.9 0 0 0 5.6 1.72h.01c5.46 0 9.9-4.45 9.9-9.9C21.95 6.45 17.5 2 12.04 2zm5.8 14.15c-.24.68-1.4 1.3-1.94 1.34-.5.05-1.13.07-1.82-.11-.42-.13-.96-.31-1.65-.61-2.9-1.25-4.8-4.17-4.94-4.36-.15-.19-1.18-1.57-1.18-2.99 0-1.42.75-2.12 1.01-2.41.27-.29.58-.36.77-.36l.55.01c.18.01.42-.07.66.5.24.59.83 2.04.9 2.18.07.15.12.32.02.51-.1.19-.15.31-.29.48-.15.17-.31.38-.44.51-.15.15-.3.31-.13.6.17.29.75 1.24 1.62 2.01 1.11.99 2.05 1.3 2.34 1.44.29.15.46.12.63-.07.17-.19.72-.84.91-1.13.19-.29.39-.24.66-.14.27.1 1.7.8 1.99.95.29.15.48.22.55.34.07.12.07.71-.17 1.39z"/></svg>';
+    function findRetry(col) {
+        // Vários widgets têm 2 botões (#q-retry-btn só-mobile escondido + #q-btn-nova-prova): usa o VISÍVEL.
+        var ids = [$('q-retry-btn'), $('q-btn-nova-prova')].filter(Boolean);
+        for (var k = 0; k < ids.length; k++) if (vis(ids[k])) return ids[k];
+        var all = col.querySelectorAll('button, a, p, div[role="button"]');
+        for (var i = 0; i < all.length; i++) { if (vis(all[i]) && /outra foto|nova foto|provar novamente|tentar novamente/i.test(all[i].textContent || '') && all[i].children.length < 3) return all[i]; }
+        return null;
+    }
+    // ── Modelo ANTIGO de tela (sem nome/preço/comprar): cria o que falta lendo a página.
+    function pageName() {
+        var h = document.querySelector('h1.product_title, h1.js-product-name, h1.nome-produto, h1.product-name, h1[itemprop="name"], .product-info h1, h1');
+        return ((h && h.innerText) || document.title || '').trim();
+    }
+    function pagePrice() {
+        var v = 0;
+        // 1º o preço VISÍVEL do produto principal (o JSON-LD às vezes traz o preço "de")
+        var vs = document.querySelectorAll('.summary .price ins .amount, .summary .price > .amount, .summary .price .woocommerce-Price-amount, .js-price-display, .preco-promocional, .product-price .price, [itemprop="price"]');
+        for (var k = 0; k < vs.length && !v; k++) { if (vs[k].closest('#q-modal-ia,[class*="card"],[class*="related"],[class*="carousel"],[class*="swiper"]')) continue; v = num(vs[k].getAttribute('content') ? String(vs[k].getAttribute('content')).replace('.', ',') : vs[k].innerText); }
+        document.querySelectorAll('script[type="application/ld+json"]').forEach(function (sc) {
+            if (v) return;
+            try { [].concat(JSON.parse(sc.textContent)).forEach(function (o) { [].concat(o['@graph'] || o).forEach(function (n) { var of = n && n.offers; if (of && !v) { of = [].concat(of)[0]; var p = parseFloat(of.lowPrice || of.price); if (p > 0) v = p; } }); }); } catch (e) {}
+        });
+        if (!v) { var mt = document.querySelector('meta[property="product:price:amount"], meta[itemprop="price"]'); if (mt) v = parseFloat(String(mt.content).replace(',', '.')) || 0; }
+        if (!v) {
+            var el = document.querySelector('.summary .price ins .amount, .summary .price .amount, .js-price-display, .preco-promocional, [itemprop="price"], .product-price, .price');
+            if (el) v = num(el.getAttribute('content') ? String(el.getAttribute('content')).replace('.', ',') : el.innerText);
+        }
+        return v;
+    }
+    function pageInstallment() {
+        var sel = '.js-max-installments, .js-installments, .preco-parcela, .parcelas, [class*="installment"], [class*="parcel"], .summary, .product-price, .price';
+        var els = document.querySelectorAll(sel);
+        for (var i = 0; i < els.length; i++) {
+            if (els[i].closest('#q-modal-ia,[class*="card"],[class*="related"],[class*="carousel"],[class*="swiper"]')) continue;
+            var m = (els[i].innerText || '').replace(/\s+/g, ' ').match(/(\d{1,2})\s*x\s*(?:de\s*)?R\$\s*[\d.]+,\d{2}(?:\s*(?:sem|com)\s*juros)?/i);
+            if (m) return m[0];
+        }
+        return '';
+    }
+    function nativeBuy() {
+        var c = document.querySelectorAll('button.single_add_to_cart_button, .js-addtocart, #button-buy, .botao-comprar, a.botao-comprar, .btn-comprar, button[name="add-to-cart"], [data-action="add-to-cart"], form.cart button[type="submit"], .comprar .botao');
+        for (var i = 0; i < c.length; i++) if (!c[i].closest('#q-modal-ia') && vis(c[i])) return c[i];
+        return c.length ? c[0] : null;
+    }
+    function buildOld(col) {
+        if ($('q-btn-buy-now') || !nativeBuy()) return;
+        if (!$('q-result-prodinfo')) {
+            var info = document.createElement('div'); info.id = 'q-result-prodinfo'; info.className = 'q-result-prodinfo'; info.style.cssText = 'text-align:left;margin-bottom:4px;';
+            var nm = document.createElement('div'); nm.id = 'q-result-prodname'; nm.className = 'q-result-prodname'; nm.style.cssText = 'font-weight:700;color:var(--c-ink,#111);'; nm.textContent = pageName();
+            var pr = document.createElement('div'); pr.id = 'q-result-prodprice'; var pv = pagePrice(); pr.textContent = pv ? brl(pv) : '';
+            var ins = document.createElement('div'); ins.id = 'q-result-installment'; ins.textContent = pageInstallment();
+            info.appendChild(nm); info.appendChild(pr); info.appendChild(ins);
+            var anchorTop = $('q-provas-restantes-result');
+            if (anchorTop && anchorTop.parentNode === col) col.insertBefore(info, anchorTop.nextSibling); else col.insertBefore(info, col.firstChild);
+        }
+        var b = document.createElement('button'); b.type = 'button'; b.id = 'q-btn-buy-now'; b.className = 'q-btn-buy-now'; b.textContent = 'Comprar';
+        b.style.cssText = 'background:var(--c-primary,var(--q-primary,#111));color:#fff;';
+        b.onclick = function () {
+            try { fetch('https://n8n.segredosdodrop.com/webhook/pl-provador-buy-click', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: ((document.querySelector('#q-modal-ia input[type=tel]') || {}).value || ''), origin: location.origin, produto: pageName() }) }).catch(function () {}); } catch (e) {}
+            var x = document.querySelector('#q-close-btn, #q-modal-ia .q-close, #q-modal-ia [class*="close"]');
+            try { if (x) x.click(); else $('q-modal-ia').style.display = 'none'; } catch (e) {}
+            var nb = nativeBuy(); if (nb) { try { nb.scrollIntoView({ block: 'center' }); } catch (e) {} setTimeout(function () { try { nb.click(); } catch (e) {} }, 150); }
+        };
+        var info2 = $('q-result-prodinfo');
+        col.insertBefore(b, info2 ? info2.nextSibling : col.firstChild);
+        var back = $('q-btn-back'); if (back) back.style.setProperty('display', 'none', 'important');
+    }
+    function apply() {
+        var col = $('q-result-actions-col'), img = $('q-final-view-img');
+        if (!col || !img || !img.getAttribute('src')) return;
+        css();
+        try { buildOld(col); } catch (e) {}
+        var buy = $('q-btn-buy-now');
+        // ── preço
+        var info = $('q-result-prodinfo'), pe = $('q-result-prodprice'), ie = $('q-result-installment');
+        if (info && pe) {
+            var oldEl = pe.querySelector('.q-pr-old');
+            var fullTxt = oldEl ? oldEl.textContent : ((pe.textContent || '').match(/R\$\s*[\d.]+,\d{2}/) || [pe.textContent || ''])[0];
+            var bigEl = pe.querySelector('.q-pr-big');
+            var full = num(fullTxt), av = (oldEl && bigEl) ? num(bigEl.textContent) : avista(full);
+            var instTxt = ie ? (ie.textContent || '') : '';
+            var box = $('pl-rl-price');
+            if (!box) { box = document.createElement('div'); box.id = 'pl-rl-price'; box.className = 'pl-rl-price'; info.appendChild(box); }
+            var h = '';
+            if (full > 0 && av > 0) {
+                var pct = Math.round((1 - av / full) * 100);
+                h += '<div class="pl-rl-old">' + brl(full) + '</div><div class="pl-rl-line"><div class="pl-rl-big">' + brl(av) + '</div>' + (pct > 0 ? '<span class="pl-rl-tag">-' + pct + '%</span>' : '') + '</div><div class="pl-rl-sub">à vista com desconto</div>';
+            } else if (full > 0) {
+                h += '<div class="pl-rl-line"><div class="pl-rl-big">' + brl(full) + '</div></div>';
+            } else if (pe.textContent) {
+                h += '<div class="pl-rl-line"><div class="pl-rl-big">' + esc(pe.textContent.trim()) + '</div></div>';
+            }
+            var ph = parcela(instTxt);
+            if (ph) h += '<div class="pl-rl-inst">' + ph + '</div>';
+            if (box.innerHTML !== h) box.innerHTML = h;
+        }
+        // ── botões
+        if (!buy) return;
+        buy.classList.add('pl-rl-buy');
+        if (/^\s*comprar\b/i.test(buy.textContent || '') && !buy.querySelector('*')) buy.textContent = 'Comprar';
+        var anchor = buy;
+        if (PL_WA && PL_WA.length >= 12 && vis(buy)) {
+            var or = $('pl-rl-or'), wa = $('pl-rl-wa');
+            if (!or) { or = document.createElement('div'); or.id = 'pl-rl-or'; or.className = 'pl-rl-or'; or.textContent = 'ou'; }
+            if (!wa) {
+                wa = document.createElement('button'); wa.type = 'button'; wa.id = 'pl-rl-wa'; wa.className = 'pl-rl-wa';
+                wa.innerHTML = WA_SVG + '<span>Comprar pelo WhatsApp</span>';
+                wa.onclick = function () {
+                    var nm = (($('q-result-prodname') || {}).textContent || document.title || '').trim();
+                    var url = location.href.split('#')[0].split('?')[0];
+                    var msg = 'Olá! Provei o *' + nm + '* no provador virtual e gostaria de comprar pelo WhatsApp 😊\n' + url;
+                    try {
+                        var ph = (document.getElementById('q-phone') || document.querySelector('#q-modal-ia input[type=tel]') || {}).value || '';
+                        fetch('https://n8n.segredosdodrop.com/webhook/pl-provador-buy-click', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: ph, origin: location.origin, produto: nm, canal: 'whatsapp' }) }).catch(function () {});
+                    } catch (e) {}
+                    window.open('https://wa.me/' + PL_WA + '?text=' + encodeURIComponent(msg), '_blank');
+                };
+            }
+            if (buy.nextSibling !== or) buy.parentNode.insertBefore(or, buy.nextSibling);
+            if (or.nextSibling !== wa) or.parentNode.insertBefore(wa, or.nextSibling);
+            anchor = wa;
+        }
+        var rt = findRetry(col);
+        if (rt && rt !== anchor && rt.parentNode === anchor.parentNode && anchor.nextSibling !== rt) {
+            anchor.parentNode.insertBefore(rt, anchor.nextSibling);
+        }
+        if (rt) {
+            rt.classList.add('pl-rl-retry');
+            // só UM botão de outra foto (vários widgets mostram "Tentar outra foto" + "Provar outra foto")
+            [$('q-retry-btn'), $('q-btn-nova-prova')].forEach(function (o) { if (o && o !== rt && vis(o)) o.style.setProperty('display', 'none', 'important'); });
+        }
+    }
+    function safe() { try { apply(); } catch (e) { try { console.warn('[PL layout]', e); } catch (_) {} } }
+    var t = null;
+    function sched() { clearTimeout(t); t = setTimeout(safe, 60); }
+    function watch() {
+        try {
+            new MutationObserver(function (ms) {
+                for (var i = 0; i < ms.length; i++) {
+                    var tg = ms[i].target;
+                    if (tg && (tg.id === 'q-final-view-img' || tg.id === 'q-step-result' || tg.id === 'q-btn-buy-now' || tg.id === 'q-result-prodprice' || tg.id === 'q-result-installment' || (tg.classList && tg.classList.contains('q-card-ia')))) { sched(); return; }
+                }
+            }).observe(document.documentElement, { subtree: true, attributes: true, childList: true, characterData: false, attributeFilter: ['src', 'style', 'class'] });
+        } catch (e) {}
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch); else watch();
+})();
